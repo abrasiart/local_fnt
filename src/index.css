@@ -1,0 +1,514 @@
+/* src/index.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+header {
+    background-color: #5b428d;
+    color: white;
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+header nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+    transition: opacity 0.3s ease;
+}
+
+header nav a:hover {
+    opacity: 0.8;
+}
+
+/* --- LAYOUT PRINCIPAL DE DUAS COLUNAS --- */
+.main-content-layout {
+    display: flex;
+    gap: 15px;
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    align-items: flex-start;
+    min-height: 85vh; /* Altura mínima para o layout principal */
+}
+
+.sidebar-left {
+    flex: 0 0 200px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.slogan-title {
+    font-size: 0.9em;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: normal;
+}
+
+.main-map-area {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.search-section {
+    padding: 0;
+    margin-top: 0;
+    box-shadow: none;
+    background-color: transparent;
+    width: 100%;
+}
+
+.search-bar {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.search-bar input {
+    flex-grow: 1;
+    padding: 5px;
+    font-size: 0.8em;
+    box-sizing: border-box;
+}
+
+.search-bar button {
+    padding: 5px;
+    background-color: transparent;
+    color: #5b428d;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    width: auto;
+}
+.search-bar button:hover {
+    background-color: #f0f0f0;
+}
+.search-bar button::after {
+    content: "🔍";
+}
+
+.product-highlights {
+    margin-top: 15px;
+}
+.product-highlights h3 {
+    margin-top: 0;
+    font-size: 0.9em;
+    color: #888;
+}
+
+.product-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-card {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 5px;
+    text-align: center;
+    background-color: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    position: relative;
+    font-size: 0.75em;
+}
+
+.product-card img {
+    max-width: 50px;
+    height: auto;
+    margin-bottom: 3px;
+}
+
+.product-card h4 {
+    margin-top: 0;
+    margin-bottom: 2px;
+    font-size: 0.9em;
+    color: #5b428d;
+    line-height: 1.2;
+}
+
+.product-card p {
+    font-size: 0.7em;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.product-card .highlight-tag {
+    background-color: #ffeb3b;
+    color: #333;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-size: 0.6em;
+    font-weight: bold;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+}
+
+.product-card button {
+    padding: 3px 5px;
+    font-size: 0.7em;
+    margin-top: 5px;
+    background-color: #5b428d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.product-card button:hover {
+    background-color: #4b3472;
+}
+
+/* Estilo para os detalhes do produto selecionado */
+.selected-product-details {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+.selected-product-details .product-title {
+    font-size: 1.2em;
+    color: #5b428d;
+    margin-bottom: 5px;
+}
+.selected-product-details .product-description {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+}
+.selected-product-details .product-card.compact {
+    padding: 5px;
+    margin-bottom: 10px;
+}
+.selected-product-details .product-card.compact img {
+    max-width: 40px;
+}
+
+
+/* --- ESTILOS DA ÁREA DO MAPA E RESULTADOS --- */
+.results-section {
+    padding: 0;
+    margin-top: 0;
+    box-shadow: none;
+    background-color: transparent;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.locals-count {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: left;
+}
+.saba-mais-link {
+    color: #5b428d;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    display: block;
+    text-align: left;
+}
+.saba-mais-link:hover {
+    text-decoration: underline;
+}
+
+
+.map-area {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    flex-grow: 1;
+    flex-shrink: 0;
+
+    position: relative;
+    display: block;
+
+    height: 600px; /* <<-- FIXADO EM 580PX */
+}
+
+.map-container {
+    width: 100%;
+    height: 700px;
+    min-height: 500px;
+}
+
+.leaflet-map {
+  height: 100%; /* Faz com que o mapa preencha 100% da altura do container */
+}
+
+
+/* --- ESTILOS DA LISTA DE PDVs --- */
+.pdv-list {
+    flex-shrink: 0;
+    overflow-y: auto;
+    max-height: 250px;
+
+    padding-right: 10px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pdv-list .pdv-item {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: left;
+}
+.pdv-list .pdv-item h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #5b428d;
+    font-size: 1em;
+}
+.pdv-list .pdv-item p {
+    margin: 0;
+    font-size: 0.85em;
+    color: #555;
+}
+
+
+/* --- ESTILOS DO MODAL --- */
+.modal {
+    display: flex;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    color: #5b428d;
+    margin-top: 0;
+    font-size: 1.8em;
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+}
+
+.location-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.location-input-group input {
+    padding: 15px;
+    border: 2px solid #5b428d;
+    border-radius: 8px;
+    font-size: 1.1em;
+    width: calc(100% - 30px);
+}
+
+.location-input-group button {
+    padding: 15px 20px;
+    background-color: #5b428d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.location-input-group button:hover {
+    background-color: #4b3472;
+}
+
+.or-divider {
+    margin: 15px 0;
+    color: #888;
+    position: relative;
+    font-size: 1.1em;
+}
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #ddd;
+}
+.or-divider::before {
+    left: 0;
+}
+.or-divider::after {
+    right: 0;
+}
+
+.use-my-location-button {
+    padding: 15px 20px;
+    background-color: #f0f0f0;
+    color: #5b428d;
+    border: 2px solid #5b428d;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    width: calc(100% - 4px);
+}
+
+.use-my-location-button:hover {
+    background-color: #e0e0e0;
+    color: #4b3472;
+}
+
+.powered-by {
+    font-size: 0.8em;
+    color: #999;
+    margin-top: 20px;
+}
+
+.cep-hint {
+    font-size: 0.8em;
+    color: #777;
+    margin-top: 10px;
+}
+
+/* Estilo para o overlay com a mensagem sobre o mapa */
+.message-overlay-above-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+.message-overlay-above-map h2 {
+    color: #5b428d;
+    font-size: 1.8em;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Media queries para responsividade */
+@media (max-width: 900px) {
+    .main-content-layout {
+        flex-direction: column;
+        gap: 15px;
+        min-height: auto;
+    }
+    .sidebar-left {
+        flex: 1 1 auto;
+        width: 100%;
+        text-align: left;
+        align-items: flex-start;
+    }
+    .main-map-area {
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 400px;
+    }
+    .map-area {
+        height: 45vh;
+        display: block;
+    }
+    .pdv-list {
+        max-height: 200px;
+    }
+}
+
+@media (min-width: 600px) {
+    .location-input-group {
+        flex-direction: row;
+    }
+    .location-input-group input {
+        width: auto;
+        flex-grow: 1;
+    }
+    .location-input-group button {
+        width: auto;
+    }
+    .use-my-location-button {
+        width: auto;
+    }
+}
