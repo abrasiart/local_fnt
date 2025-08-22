@@ -320,8 +320,8 @@ useEffect(() => {
                   ) : highlightProducts.length === 0 ? (
                     <p>Nenhum produto em destaque encontrado.</p>
                   ) : (
-                    highlightProducts.map((p) => (
-                      <div key={p.id} className="product-card">
+                   highlightProducts.map((p, idx) => (
+                   <div key={p.id || `prod-${idx}`} className="product-card">
                         {p.em_destaque && <span className="highlight-tag">NOVO</span>}
                         <img src={p.imagem_url} alt={p.nome} />
                         <h4>{p.nome}</h4>
