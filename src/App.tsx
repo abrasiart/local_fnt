@@ -338,28 +338,31 @@ export default function App() {
             </div>
 
             {selectedProduct ? (
-              <>
-                <h2 className="locals-count">{pdvResults.length} locais mais próximos</h2>
-                <a href="#" className="saba-mais-link">SAIBA MAIS &gt;</a>
+  <>
+    <h2 className="locals-count">{pdvResults.length} locais mais próximos</h2>
+    <a href="#" className="saba-mais-link">SAIBA MAIS &gt;</a>
 
-                <div id="pdv-results" className="pdv-list">
-                  {loadingPdvs ? (
-                    <p>Buscando pontos de venda...</p>
-                  ) : error ? (
-                    <p style={{ color: "red" }}>{error}</p>
-                  ) : pdvResults.length === 0 ? (
-                    <p>Nenhum ponto de venda encontrado para este produto na sua localização.</p>
-                  ) : (
-                    pdvResults.map((pdv) => (
-                      <div key={pdv.id} className="pdv-item">
-                        <h4>{pdv.nome}</h4>
-                        <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
-                        <p>Distância: {pdv.distancia_km} km</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="message-overlay-above-map">
-                <h2>Escolha primeiro um prod
+    <div id="pdv-results" className="pdv-list">
+      {loadingPdvs ? (
+        <p>Buscando pontos de venda...</p>
+      ) : error ? (
+        <p style={{ color: 'red' }}>{error}</p>
+      ) : pdvResults.length === 0 ? (
+        <p>Nenhum ponto de venda encontrado para este produto na sua localização.</p>
+      ) : (
+        pdvResults.map((pdv) => (
+          <div key={pdv.id} className="pdv-item">
+            <h4>{pdv.nome}</h4>
+            <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
+            <p>Distância: {pdv.distancia_km} km</p>
+          </div>
+        ))
+      )}
+    </div>
+  </>
+) : (
+  // Se nenhum produto foi selecionado, mostra a mensagem sobre o mapa
+  <div className="message-overlay-above-map">
+    <h2>Escolha primeiro um produto para encontrar em lojas próximas</h2>
+  </div>
+)}
