@@ -338,31 +338,62 @@ export default function App() {
             </div>
 
             {selectedProduct ? (
-  <>
-    <h2 className="locals-count">{pdvResults.length} locais mais próximos</h2>
-    <a href="#" className="saba-mais-link">SAIBA MAIS &gt;</a>
+              <>
+                <h2 className="locals-count">{pdvResults.length} locais mais próximos</h2>
+                <a href="#" className="saba-mais-link">SAIBA MAIS &gt;</a>
 
-    <div id="pdv-results" className="pdv-list">
-      {loadingPdvs ? (
-        <p>Buscando pontos de venda...</p>
-      ) : error ? (
-        <p style={{ color: 'red' }}>{error}</p>
-      ) : pdvResults.length === 0 ? (
-        <p>Nenhum ponto de venda encontrado para este produto na sua localização.</p>
-      ) : (
-        pdvResults.map((pdv) => (
-          <div key={pdv.id} className="pdv-item">
-            <h4>{pdv.nome}</h4>
-            <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
-            <p>Distância: {pdv.distancia_km} km</p>
+                <div id="pdv-results" className="pdv-list">
+                  {loadingPdvs ? (
+                    <p>Buscando pontos de venda...</p>
+                  ) : error ? (
+                    <p style={{ color: "red" }}>{error}</p>
+                  ) : pdvResults.length === 0 ? (
+                    <p>Nenhum ponto de venda encontrado para este produto na sua localização.</p>
+                  ) : (
+                    pdvResults.map((pdv) => (
+                      <div key={pdv.id} className="pdv-item">
+                        <h4>{pdv.nome}</h4>
+                        <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
+                        <p>Distância: {pdv.distancia_km} km</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="message-overlay-above-map">
+                <h2>Escolha primeiro um produto para encontrar em lojas próximas</h2>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
+
+      {/* Modal de localização */}
+      {showLocationModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close-button" onClick={() => setShowLocationModal(false)}>&times;</span>
+            <h2>Onde você quer encontrar nossos produtos?</h2>
+            <div className="location-input-group">
+              <input
+                type="text"
+                id="cep-input"
+                placeholder="Informe sua localização (CEP)"
+                value={cep}
+                onChange={(e) => setCep(e.target.value)}
+              />
+              <button onClick={handleSearchByCepClick}>Buscar</button>
+            </div>
+            <p className="or-divider">OU</p>
+            <button className="use-my-location-button" onClick={handleUseMyLocation}>
+              Usar minha localização
+            </button>
+            <p className="cep-hint"><small>Após informar seu local, escolha um produto na lateral.</small></p>
+            <div className="powered-by">Desenvolvido por Paviloche</div>
           </div>
-        ))
+        </div>
       )}
     </div>
-  </>
-) : (
-  // Se nenhum produto foi selecionado, mostra a mensagem sobre o mapa
-  <div className="message-overlay-above-map">
-    <h2>Escolha primeiro um produto para encontrar em lojas próximas</h2>
-  </div>
-)}
+  );
+}
