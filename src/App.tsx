@@ -22,7 +22,7 @@ interface PointOfSale {
 }
 // --- FIM DAS INTERFACES ---
 
-export default function App(): JSX.Element {
+export default function App(): {
   const BACKEND_URL = API_BASE;
 
   // Estados de Localização do Usuário e Modal
