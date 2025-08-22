@@ -9,7 +9,9 @@ type Product = {
   volume: string;
   em_destaque: boolean;
   imagem_url: string;
+  produto_url?: string | null; // ← novo
 };
+
 
 type PointOfSale = {
   id: string;
@@ -269,19 +271,29 @@ useEffect(() => {
               <button onClick={handleProductSearch}>Pesquisar</button>
             </div>
 
-            {selectedProduct && (
-              <div className="selected-product-details">
-                <h3 className="product-title">{selectedProduct.nome}</h3>
-                <p className="product-description">
-                  {selectedProduct.volume} - {selectedProduct.nome}
-                </p>
-                <div className="product-card compact">
-                  <img src={selectedProduct.imagem_url} alt={selectedProduct.nome} />
-                  {selectedProduct.em_destaque && <span className="highlight-tag">NOVO</span>}
-                </div>
-                <a href="#" className="saba-mais-link">SAIBA MAIS &gt;</a>
-              </div>
-            )}
+           {selectedProduct && (
+  <div className="selected-product-details">
+    <h3 className="product-title">{selectedProduct.nome}</h3>
+    <p className="product-description">{selectedProduct.volume} - {selectedProduct.nome}</p>
+    <div className="product-card compact">
+      <img src={selectedProduct.imagem_url} alt={selectedProduct.nome} />
+      {selectedProduct.em_destaque && <span className="highlight-tag">NOVO</span>}
+    </div>
+
+    {/* ↓ Só mostra se houver URL */}
+    {selectedProduct.produto_url && (
+      <a
+        href={selectedProduct.produto_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="saba-mais-link"
+      >
+        SAIBA MAIS &gt;
+      </a>
+    )}
+  </div>
+)}
+
 
             {/* Resultados da busca */}
             {productSearchTerm.trim() !== "" && (
