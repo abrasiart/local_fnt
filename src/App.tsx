@@ -53,22 +53,33 @@ export default function App() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]);
   const [mapZoom, setMapZoom] = useState<number>(11);
 
-  // Destaques ao montar
-  useEffect(() => {
-    (async () => {
-      try {
-        const resp = await fetch(`${BACKEND_URL}/produtos/destaque`);
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data: Product[] = await resp.json();
-        setHighlightProducts(data);
-      } catch (e: any) {
-        console.error("Erro ao buscar destaques:", e);
-        setError("Não foi possível carregar os produtos em destaque.");
-      } finally {
-        setLoadingProducts(false);
-      }
-    })();
-  }, [BACKEND_URL]);
+// Destaques ao montar
+useEffect(() => {
+  (async () => {
+    try {
+      const resp = await fetch(`${BACKEND_URL}/produtos/destaque`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const raw: any[] = await resp.json();
+
+      // normaliza e garante id/boolean
+      const data: Product[] = (Array.isArray(raw) ? raw : []).map((p: any, idx: number) => ({
+        id: String(p.id ?? p.produto_id ?? p.product_id ?? `prod-${idx}`),
+        nome: p.nome ?? '',
+        volume: p.volume ?? '',
+        em_destaque: Boolean(p.em_destaque ?? p.destaque),
+        imagem_url: p.imagem_url ?? p.image_url ?? p.imagem ?? '',
+      }));
+
+      setHighlightProducts(data);
+    } catch (e: any) {
+      console.error("Erro ao buscar destaques:", e);
+      setError("Não foi possível carregar os produtos em destaque.");
+    } finally {
+      setLoadingProducts(false);
+    }
+  })();
+}, [BACKEND_URL]);
+
 
   // Buscar PDVs por CEP ou Lat/Lon
   const searchPdvsByLocation = async (params: { cep?: string; lat?: number; lon?: number }) => {
