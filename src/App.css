@@ -1,35 +1,28 @@
 /* ========== BASE / THEME ========== */
 :root{
-  --brand: #5b3fa3;           /* roxo Paviloche (ajuste se quiser) */
+  --brand:#5b3fa3;
   --brand-dark:#4a2f8a;
   --text:#2b2b2b;
   --muted:#6b6b6b;
   --bg:#f6f6f8;
   --card:#ffffff;
   --border:#e7e7ee;
-  --ok:#22c55e;
-  --shadow: 0 8px 24px rgba(28, 24, 55, .08);
+  --shadow:0 8px 24px rgba(28,24,55,.08);
 }
 
 *{ box-sizing:border-box }
 html,body,#root{ height:100% }
 body{
-  margin:0;
-  color:var(--text);
-  background:var(--bg);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+  margin:0; background:var(--bg); color:var(--text);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,"Noto Sans",sans-serif;
 }
 
-/* ========== HEADER (simples) ========== */
-header{
-  background: var(--brand);
-  color: #fff;
-}
+/* ========== HEADER (opcional) ========== */
+header{ background:var(--brand); color:#fff }
 header .container{
-  display:flex; align-items:center; gap:24px;
   max-width:1280px; margin:0 auto; padding:12px 20px;
+  display:flex; align-items:center; gap:24px;
 }
 header h1{ margin:0; font-size:22px; font-weight:800 }
 header nav{ display:flex; gap:16px; flex-wrap:wrap }
@@ -38,11 +31,10 @@ header nav a:hover{ opacity:1; text-decoration:underline }
 
 /* ========== LAYOUT PRINCIPAL ========== */
 .main-content-layout{
-  max-width:1280px; margin:0 auto;
-  padding:16px 20px 24px;
+  max-width:1280px; margin:0 auto; padding:16px 20px 24px;
   display:grid; gap:24px;
-  grid-template-columns: 360px 1fr;           /* sidebar + mapa */
-  height: calc(100vh - 64px);                 /* ocupa a tela (64px ≈ header) */
+  grid-template-columns: 320px 1fr;     /* << largura fixa da sidebar */
+  height: calc(100vh - 64px);
 }
 
 /* ========== SIDEBAR ========== */
@@ -51,35 +43,26 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   border:1px solid var(--border);
   border-radius:16px;
   padding:16px;
-  box-shadow: var(--shadow);
+  box-shadow:var(--shadow);
   overflow:auto;
+  max-width:320px;            /* garante que não expanda */
 }
 
 .search-label{
-  display:block;
-  font-size:14px;
-  color:var(--muted);
-  margin-bottom:8px;
+  display:block; font-size:14px; color:var(--muted); margin-bottom:8px;
 }
-
 .search-bar.pill{
-  display:flex; gap:8px;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:999px;
+  display:flex; gap:8px; background:#fff;
+  border:1px solid var(--border); border-radius:999px;
   padding:8px 10px 8px 14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.03) inset;
 }
 .search-input{
-  flex:1; border:none; outline:none;
-  font-size:15px; color:var(--text);
-  background:transparent;
+  flex:1; border:none; outline:none; font-size:15px;
+  color:var(--text); background:transparent;
 }
 .search-btn{
-  border:none; cursor:pointer;
-  background:var(--brand); color:#fff;
-  font-weight:700; font-size:14px;
-  padding:10px 16px; border-radius:999px;
+  border:none; cursor:pointer; background:var(--brand); color:#fff;
+  font-weight:700; font-size:14px; padding:10px 16px; border-radius:999px;
 }
 .search-btn:hover{ background:var(--brand-dark) }
 
@@ -89,25 +72,22 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   margin:16px 2px 10px;
 }
 
-/* Card de produto (lateral) — maior, com botão no canto inferior direito */
+/* ====== CARD DA LISTA (lateral) ====== */
 .product-list-card{
   position:relative;
-  display:grid; grid-template-columns: 96px 1fr; gap:12px;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:12px 12px 54px 12px;       /* espaço pro botão no rodapé */
-  margin-bottom:12px;
-  box-shadow: var(--shadow);
+  display:grid; grid-template-columns: 84px 1fr;  /* imagem + texto */
+  gap:12px;
+  background:#fff; border:1px solid var(--border);
+  border-radius:14px; padding:12px 12px 54px 12px;  /* espaço pro botão */
+  margin-bottom:12px; box-shadow:var(--shadow);
+  width:100%; overflow:hidden;
 }
-
 .product-thumb{
-  width:96px; height:96px; object-fit:contain;
+  width:84px; height:84px; object-fit:contain;
   border-radius:10px; background:#fafafa;
 }
-
 .product-info{ display:flex; flex-direction:column; gap:4px; padding-right:8px }
-.product-name{ margin:2px 0 0; font-size:16px; line-height:1.2; font-weight:800; color:#2f2a4f }
+.product-name{ margin:2px 0 0; font-size:15.5px; line-height:1.25; font-weight:800; color:#2f2a4f }
 .product-volume{ margin:0; font-size:12px; color:var(--muted) }
 
 .tag-new{
@@ -125,6 +105,12 @@ header nav a:hover{ opacity:1; text-decoration:underline }
 }
 .btn-find:hover{ background:var(--brand-dark) }
 
+/* ====== Salvaguardas para cards antigos (se existirem) ====== */
+.sidebar-left .product-card{ position:relative; overflow:hidden }
+.sidebar-left .product-card img{
+  width:84px; height:84px; object-fit:contain; display:block;
+}
+
 /* ========== ÁREA DO MAPA ========== */
 .main-map-area{ display:flex; flex-direction:column; min-height:0 }
 .map-wrap{ position:relative; flex:1; min-height:560px }
@@ -133,7 +119,7 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   background:#eef0f4;
   border:1px solid var(--border);
   border-radius:16px; overflow:hidden;
-  box-shadow: var(--shadow);
+  box-shadow:var(--shadow);
 }
 
 /* CTA flutuante sobre o mapa */
@@ -146,10 +132,7 @@ header nav a:hover{ opacity:1; text-decoration:underline }
 }
 .cta-reseller:hover{ background:#5c36b5 }
 
-/* Mensagem quando nenhum produto foi selecionado */
-.message-overlay-above-map{
-  text-align:center; color:#6941c6;
-}
+.message-overlay-above-map{ text-align:center; color:#6941c6 }
 .message-overlay-above-map h2{
   margin:16px 0 0; font-weight:900; letter-spacing:.2px;
 }
@@ -159,17 +142,15 @@ header nav a:hover{ opacity:1; text-decoration:underline }
 .pdv-list{ display:grid; gap:10px; margin-top:8px }
 .pdv-item{
   background:#fff; border:1px solid var(--border);
-  border-radius:12px; padding:12px;
-  box-shadow: var(--shadow);
+  border-radius:12px; padding:12px; box-shadow:var(--shadow);
 }
 .pdv-item h4{ margin:0 0 6px; font-size:15px }
 
-/* ========== DETALHE DO PRODUTO SELECIONADO ========== */
+/* ========== DETALHE PRODUTO SELECIONADO (topo lateral) ========== */
 .selected-product-details .product-card.compact{
-  position:relative;
-  background:#fff; border:1px solid var(--border);
+  position:relative; background:#fff; border:1px solid var(--border);
   border-radius:12px; padding:10px; display:flex; align-items:center; gap:12px;
-  width:max-content; box-shadow: var(--shadow);
+  width:max-content; box-shadow:var(--shadow);
 }
 .selected-product-details img{ width:64px; height:64px; object-fit:contain }
 .highlight-tag{
@@ -189,9 +170,9 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   display:flex; align-items:center; justify-content:center; z-index:50;
 }
 .modal-content{
-  width:min(560px,90vw);
-  background:#fff; border-radius:16px; padding:22px 18px 18px;
-  border:1px solid var(--border); box-shadow: var(--shadow);
+  width:min(560px,90vw); background:#fff;
+  border-radius:16px; padding:22px 18px 18px;
+  border:1px solid var(--border); box-shadow:var(--shadow);
 }
 .close-button{ float:right; font-size:26px; cursor:pointer; line-height:1 }
 .location-input-group{ display:flex; gap:8px; margin-top:10px }
@@ -204,27 +185,20 @@ header nav a:hover{ opacity:1; text-decoration:underline }
 }
 .or-divider{ text-align:center; color:var(--muted) }
 .use-my-location-button{
-  width:100%; border-radius:12px; padding:12px 14px;
-  border:1px solid var(--brand); color:var(--brand); background:#fff;
-  font-weight:800; cursor:pointer
+  width:100%; border:1px solid var(--brand); color:var(--brand);
+  background:#fff; font-weight:800; cursor:pointer; padding:12px 14px; border-radius:12px
 }
 .powered-by{ text-align:center; margin-top:8px; color:var(--muted) }
 
 /* ========== RESPONSIVO ========== */
 @media (max-width: 1100px){
   .main-content-layout{
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 300px 1fr;
     height: calc(100vh - 60px);
   }
-  .product-list-card{ grid-template-columns: 88px 1fr }
-  .product-thumb{ width:88px; height:88px }
 }
-
 @media (max-width: 860px){
-  header .container{ padding:10px 14px }
-  .main-content-layout{
-    grid-template-columns: 1fr;
-    height: auto;
-  }
-  .map-wrap{ min-height: 60vh }
+  .main-content-layout{ grid-template-columns: 1fr; height:auto }
+  .map-wrap{ min-height:60vh }
+  .sidebar-left{ max-width:none }
 }
