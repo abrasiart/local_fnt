@@ -9,7 +9,7 @@ type Product = {
   volume: string;
   em_destaque: boolean;
   imagem_url: string;
-  produto_url?: string | null; // opcional, vindo do CSV
+  produto_url?: string | null;
 };
 
 type PointOfSale = {
@@ -24,6 +24,15 @@ type PointOfSale = {
 
 export default function App() {
   const BACKEND_URL = API_BASE;
+
+  // --- modo EMBED (oculta header e ocupa a tela toda) ---
+  const [isEmbed, setIsEmbed] = useState(false);
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("embed") === "1") setIsEmbed(true);
+    } catch {}
+  }, []);
 
   /** Localização / Modal */
   const [showLocationModal, setShowLocationModal] = useState<boolean>(true);
@@ -55,13 +64,13 @@ export default function App() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]);
   const [mapZoom, setMapZoom] = useState<number>(11);
 
-  /** Helper: URL do produto (usa produto_url ou fallback de busca) */
+  /** Helper: URL do produto */
   const getProductUrl = (p: Product) => {
     const url = (p.produto_url || "").trim();
     return url || `https://paviloche.com.br/?s=${encodeURIComponent(p.nome)}`;
   };
 
-  /** Carregar destaques ao montar */
+  /** Destaques ao montar */
   useEffect(() => {
     (async () => {
       try {
@@ -121,7 +130,6 @@ export default function App() {
       } else if (params.lat && params.lon) {
         coordsFromApi = [params.lon, params.lat];
         try {
-          // se já preferir, migre para uma rota backend /geocode/reverse para esconder a KEY
           const KEY = "0b4186d795a547769c0272db912585c3";
           const r = await fetch(
             `https://api.opencagedata.com/geocode/v1/json?q=${params.lat}+${params.lon}&key=${KEY}&pretty=0&no_annotations=1`
@@ -238,20 +246,22 @@ export default function App() {
 
   return (
     <div className="App">
-      <header>
-        <div className="container">
-          <h1>Paviloche</h1>
-          <nav>
-            <a href="#">Produtos</a>
-            <a href="#">Institucional</a>
-            <a href="#" onClick={() => setShowLocationModal(true)}>
-              Seu local: {userLocationAddress || "Informe seu local"}
-            </a>
-            <a href="#">Seja um revendedor</a>
-            <a href="#">Contato</a>
-          </nav>
-        </div>
-      </header>
+      {!isEmbed && (
+        <header>
+          <div className="container">
+            <h1>Paviloche</h1>
+            <nav>
+              <a href="#">Produtos</a>
+              <a href="#">Institucional</a>
+              <a href="#" onClick={() => setShowLocationModal(true)}>
+                Seu local: {userLocationAddress || "Informe seu local"}
+              </a>
+              <a href="#">Seja um revendedor</a>
+              <a href="#">Contato</a>
+            </nav>
+          </div>
+        </header>
+      )}
 
       <main className="main-content-layout">
         {/* Sidebar esquerda */}
@@ -271,7 +281,6 @@ export default function App() {
               <button onClick={handleProductSearch}>Pesquisar</button>
             </div>
 
-            {/* Detalhes do produto selecionado */}
             {selectedProduct && (
               <div className="selected-product-details">
                 <h3 className="product-title">{selectedProduct.nome}</h3>
@@ -284,8 +293,6 @@ export default function App() {
                     <span className="highlight-tag">NOVO</span>
                   )}
                 </div>
-
-                {/* SAIBA MAIS */}
                 <a
                   className="saiba-mais-link"
                   href={getProductUrl(selectedProduct)}
@@ -297,7 +304,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Resultados da busca */}
             {productSearchTerm.trim() !== "" && (
               <div className="product-search-results">
                 <h3>Resultados da Busca</h3>
@@ -310,31 +316,19 @@ export default function App() {
                     <p>Nenhum produto encontrado para "{productSearchTerm}".</p>
                   ) : (
                     foundProducts.map((p) => (
-                      <div key={p.id} className="product-card">
-                        <img src={p.imagem_url} alt={p.nome} />
-                        <h4>{p.nome}</h4>
-                        <p>{p.volume}</p>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button onClick={() => handleSelectProductAndSearchPdvs(p)}>
-                            Encontrar
-                          </button>
-                          <a
-                            className="saiba-mais-link inline"
-                            href={getProductUrl(p)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Saiba mais
-                          </a>
-                        </div>
-                      </div>
-                    ))
+  <div key={p.id} className="product-card">
+    <img src={p.imagem_url} alt={p.nome} />
+    <h4>{p.nome}</h4>
+    <p>{p.volume}</p>
+    <button onClick={() => handleSelectProductAndSearchPdvs(p)}>Encontrar</button>
+  </div>
+))
+
                   )}
                 </div>
               </div>
             )}
 
-            {/* Destaques */}
             {productSearchTerm.trim() === "" && !selectedProduct && (
               <div className="product-highlights">
                 <h3>Produtos em destaque</h3>
@@ -377,7 +371,23 @@ export default function App() {
         {/* Mapa + resultados */}
         <div className="main-map-area">
           <section className="results-section">
-            <div className="map-area" style={{ height: "600px" }}>
+            <div
+              className="map-area"
+              style={{
+                position: "relative",
+                height: isEmbed ? "100vh" : "600px",
+              }}
+            >
+              {/* Botão flutuante QUERO REVENDER */}
+              <a
+                className="cta-revendedor"
+                href="https://paviloche.com.br/seja-um-revendedor/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                QUERO REVENDER
+              </a>
+
               <MapComponent
                 center={mapCenter}
                 zoom={mapZoom}
@@ -424,7 +434,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* Modal de localização */}
       {showLocationModal && (
         <div className="modal">
           <div className="modal-content">
