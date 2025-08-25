@@ -1,5 +1,6 @@
 // src/App.tsx
 import './App.css';
+import './overrides.css';
 import React, { useEffect, useState } from "react";
 import MapComponent from "./MapComponent";
 import { API_BASE } from "./config";
