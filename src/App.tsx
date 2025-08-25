@@ -341,26 +341,15 @@ export default function App() {
                     <p>Nenhum produto em destaque encontrado.</p>
                   ) : (
                     highlightProducts.map((p) => (
-                      <div key={p.id} className="product-card">
-                        {p.em_destaque && <span className="highlight-tag">NOVO</span>}
-                        <img src={p.imagem_url} alt={p.nome} />
-                        <h4>{p.nome}</h4>
-                        <p>{p.volume}</p>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button onClick={() => handleSelectProductAndSearchPdvs(p)}>
-                            Encontrar
-                          </button>
-                          <a
-                            className="saiba-mais-link inline"
-                            href={getProductUrl(p)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Saiba mais
-                          </a>
-                        </div>
-                      </div>
-                    ))
+  <div key={p.id} className="product-card">
+    {p.em_destaque && <span className="highlight-tag">NOVO</span>}
+    <img src={p.imagem_url} alt={p.nome} />
+    <h4>{p.nome}</h4>
+    <p>{p.volume}</p>
+    <button onClick={() => handleSelectProductAndSearchPdvs(p)}>Encontrar</button>
+  </div>
+))
+
                   )}
                 </div>
               </div>
