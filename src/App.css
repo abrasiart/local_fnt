@@ -202,3 +202,19 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   .map-wrap{ min-height:60vh }
   .sidebar-left{ max-width:none }
 }
+/* Modo embed: tela cheia e sem header */
+.App.is-embed {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App.is-embed header {
+  display: none !important; /* redundante, só por segurança */
+}
+
+/* Se o main precisar ocupar o resto da altura */
+.App.is-embed .main-content-layout {
+  flex: 1 1 auto;
+  min-height: 0; /* evita estourar o container */
+}
