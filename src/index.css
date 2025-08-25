@@ -512,3 +512,52 @@ header nav a:hover {
         width: auto;
     }
 }
+
+/* ====== OVERRIDES: aumentar imagem e tipografia na lista ====== */
+
+/* Layout do card no menu lateral */
+.sidebar-left .product-card{
+  display: grid;
+  grid-template-columns: 96px 1fr auto; /* imagem | texto | botão */
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* Aumenta a imagem */
+.sidebar-left .product-card img{
+  width: 96px;
+  max-width: none;     /* <— derruba o 50px do index.css */
+  height: auto;
+  border-radius: 6px;
+}
+
+/* Título e volume maiores */
+.sidebar-left .product-card h4{
+  font-size: 1rem;     /* ~16px */
+  line-height: 1.25;
+  margin: 0 0 4px 0;
+  color: #2b2359;      /* roxo do projeto */
+}
+
+.sidebar-left .product-card p{
+  font-size: .825rem;  /* ~13px */
+  margin: 0;
+  color: #64748b;      /* cinza */
+}
+
+/* Botão "Encontrar" alinhado à direita */
+.sidebar-left .product-card .product-actions,
+.sidebar-left .product-card button{
+  justify-self: end;
+}
+
+/* (opcional) badge NOVO menor no card */
+.sidebar-left .product-card .highlight-tag{
+  font-size: .65rem;
+  padding: 3px 6px;
+  border-radius: 999px;
+}
