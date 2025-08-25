@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useEffect, useState } from "react";
 import MapComponent from "./MapComponent";
 import { API_BASE } from "./config";
@@ -25,19 +26,9 @@ type PointOfSale = {
 export default function App() {
   const BACKEND_URL = API_BASE;
 
-  // --- modo EMBED (oculta header e ocupa a tela toda) ---
-  const [isEmbed, setIsEmbed] = useState(false);
-  useEffect(() => {
-    try {
-      const q = new URLSearchParams(window.location.search);
-      if (q.get("embed") === "1") setIsEmbed(true);
-    } catch {}
-  }, []);
-
   /** Localização / Modal */
   const [showLocationModal, setShowLocationModal] = useState<boolean>(true);
-  const [userLocationCoords, setUserLocationCoords] =
-    useState<[number, number] | null>(null); // [lon, lat]
+  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null); // [lon, lat]
   const [userLocationAddress, setUserLocationAddress] = useState<string | null>(null);
   const [cep, setCep] = useState<string>("");
 
@@ -63,12 +54,6 @@ export default function App() {
   /** Mapa */
   const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]);
   const [mapZoom, setMapZoom] = useState<number>(11);
-
-  /** Helper: URL do produto */
-  const getProductUrl = (p: Product) => {
-    const url = (p.produto_url || "").trim();
-    return url || `https://paviloche.com.br/?s=${encodeURIComponent(p.nome)}`;
-  };
 
   /** Destaques ao montar */
   useEffect(() => {
@@ -106,17 +91,15 @@ export default function App() {
           setShowLocationModal(true);
           return;
         }
-
+        // backend já geocodifica e retorna PDVs próximos
         const resp = await fetch(`${BACKEND_URL}/pdvs/proximos?cep=${cleanCep}`);
         const data = await resp.json();
-
         if (!resp.ok || !Array.isArray(data) || data.length === 0) {
           setError((data && data.erro) || "Não foi possível validar o CEP. Tente novamente.");
           setLoadingPdvs(false);
           setShowLocationModal(true);
           return;
         }
-
         const first = data[0];
         if (first?.latitude && first?.longitude) {
           coordsFromApi = [parseFloat(first.longitude), parseFloat(first.latitude)];
@@ -128,14 +111,17 @@ export default function App() {
           return;
         }
       } else if (params.lat && params.lon) {
+        // usar localização atual do navegador
         coordsFromApi = [params.lon, params.lat];
+
         try {
-          const KEY = "0b4186d795a547769c0272db912585c3";
           const r = await fetch(
-            `https://api.opencagedata.com/geocode/v1/json?q=${params.lat}+${params.lon}&key=${KEY}&pretty=0&no_annotations=1`
+            `${BACKEND_URL}/geocode/reverse?lat=${encodeURIComponent(
+              params.lat
+            )}&lon=${encodeURIComponent(params.lon)}`
           );
           const j = await r.json();
-          addressFromApi = j?.results?.[0]?.formatted ?? `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
+          addressFromApi = j?.formatted ?? `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
         } catch {
           addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
         }
@@ -213,12 +199,10 @@ export default function App() {
       setError("Por favor, informe sua localização primeiro para encontrar lojas.");
       return;
     }
-
     setSelectedProduct(product);
     setLoadingPdvs(true);
     setError(null);
     setPdvResults([]);
-
     try {
       const [lon, lat] = userLocationCoords;
       const url = `${BACKEND_URL}/pdvs/proximos/produto?productId=${product.id}&lat=${lat}&lon=${lon}`;
@@ -229,7 +213,6 @@ export default function App() {
       }
       const data: PointOfSale[] = await resp.json();
       setPdvResults(data);
-
       if (data.length > 0) {
         const first = data[0];
         setMapCenter([first.longitude, first.latitude]);
@@ -244,139 +227,111 @@ export default function App() {
     }
   };
 
+  /** Render helper para lista de cards (destaques e busca) */
+  const renderProductList = (list: Product[]) => (
+    <>
+      {(list || []).map((p) => (
+        <div key={p.id} className="product-list-card">
+          {p.em_destaque && <span className="tag-new">NOVO</span>}
+
+          <img className="product-thumb" src={p.imagem_url} alt={p.nome} loading="lazy" />
+
+          <div className="product-info">
+            <h4 className="product-name">{p.nome}</h4>
+            <p className="product-volume">{p.volume}</p>
+          </div>
+
+          <button
+            className="btn-find"
+            onClick={() => handleSelectProductAndSearchPdvs(p)}
+            aria-label={`Encontrar ${p.nome} perto de mim`}
+          >
+            Encontrar
+          </button>
+        </div>
+      ))}
+    </>
+  );
+
   return (
     <div className="App">
-      {!isEmbed && (
-        <header>
-          <div className="container">
-            <h1>Paviloche</h1>
-            <nav>
-              <a href="#">Produtos</a>
-              <a href="#">Institucional</a>
-              <a href="#" onClick={() => setShowLocationModal(true)}>
-                Seu local: {userLocationAddress || "Informe seu local"}
-              </a>
-              <a href="#">Seja um revendedor</a>
-              <a href="#">Contato</a>
-            </nav>
-          </div>
-        </header>
-      )}
+      {/* Cabeçalho simples – mantenha/ajuste conforme seu tema */}
+      <header>
+        <div className="container">
+          <h1>Paviloche</h1>
+          <nav>
+            <a href="#">Produtos</a>
+            <a href="#">Institucional</a>
+            <a href="#" onClick={() => setShowLocationModal(true)}>
+              Seu local: {userLocationAddress || "Informe seu local"}
+            </a>
+            <a href="https://paviloche.com.br/seja-um-revendedor/" target="_blank" rel="noreferrer">
+              Seja um revendedor
+            </a>
+            <a href="#">Contato</a>
+          </nav>
+        </div>
+      </header>
 
       <main className="main-content-layout">
         {/* Sidebar esquerda */}
-        <div className="sidebar-left">
-          <h2 className="slogan-title">Sempre tem um ponto de venda Paviloche pertinho de você!</h2>
+        <aside className="sidebar-left">
+          {/* Busca */}
+          <div className="search-section">
+            <label htmlFor="product-search" className="search-label">
+              Qual produto você quer encontrar?
+            </label>
 
-          <section className="search-section">
-            <div className="search-bar">
+            <div className="search-bar pill">
               <input
                 type="text"
                 id="product-search"
-                placeholder="O que você quer encontrar?"
+                className="search-input"
+                placeholder="Digite o nome do produto"
                 value={productSearchTerm}
                 onChange={(e) => setProductSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
               />
-              <button onClick={handleProductSearch}>Pesquisar</button>
+              <button className="search-btn" onClick={handleProductSearch}>
+                Pesquisar
+              </button>
             </div>
+          </div>
 
-            {selectedProduct && (
-              <div className="selected-product-details">
-                <h3 className="product-title">{selectedProduct.nome}</h3>
-                <p className="product-description">
-                  {selectedProduct.volume} - {selectedProduct.nome}
-                </p>
-                <div className="product-card compact">
-                  <img src={selectedProduct.imagem_url} alt={selectedProduct.nome} />
-                  {selectedProduct.em_destaque && (
-                    <span className="highlight-tag">NOVO</span>
-                  )}
-                </div>
-                <a
-                  className="saiba-mais-link"
-                  href={getProductUrl(selectedProduct)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  SAIBA MAIS &gt;
-                </a>
-              </div>
-            )}
-
-            {productSearchTerm.trim() !== "" && (
-              <div className="product-search-results">
-                <h3>Resultados da Busca</h3>
-                <div className="product-grid">
-                  {loadingProductSearch ? (
-                    <p>Buscando produtos...</p>
-                  ) : error ? (
-                    <p style={{ color: "red" }}>{error}</p>
-                  ) : foundProducts.length === 0 ? (
-                    <p>Nenhum produto encontrado para "{productSearchTerm}".</p>
-                  ) : (
-                    foundProducts.map((p) => (
-  <div key={p.id} className="product-card">
-    <img src={p.imagem_url} alt={p.nome} />
-    <h4>{p.nome}</h4>
-    <p>{p.volume}</p>
-    <button onClick={() => handleSelectProductAndSearchPdvs(p)}>Encontrar</button>
-  </div>
-))
-
-                  )}
-                </div>
-              </div>
-            )}
-
-            {productSearchTerm.trim() === "" && !selectedProduct && (
-              <div className="product-highlights">
-                <h3>Produtos em destaque</h3>
-                <div id="highlight-products-list" className="product-grid">
-                  {loadingProducts ? (
-                    <p>Carregando produtos...</p>
-                  ) : error ? (
-                    <p style={{ color: "red" }}>{error}</p>
-                  ) : highlightProducts.length === 0 ? (
-                    <p>Nenhum produto em destaque encontrado.</p>
-                  ) : (
-                    highlightProducts.map((p) => (
-  <div key={p.id} className="product-card">
-    {p.em_destaque && <span className="highlight-tag">NOVO</span>}
-    <img src={p.imagem_url} alt={p.nome} />
-    <h4>{p.nome}</h4>
-    <p>{p.volume}</p>
-    <button onClick={() => handleSelectProductAndSearchPdvs(p)}>Encontrar</button>
-  </div>
-))
-
-                  )}
-                </div>
-              </div>
-            )}
-          </section>
-        </div>
+          {/* Lista de produtos */}
+          {productSearchTerm.trim() !== "" ? (
+            <section className="product-search-results">
+              <h3>Resultados da busca</h3>
+              {loadingProductSearch ? (
+                <p>Buscando produtos...</p>
+              ) : error ? (
+                <p style={{ color: "red" }}>{error}</p>
+              ) : foundProducts.length === 0 ? (
+                <p>Nenhum produto encontrado para "{productSearchTerm}".</p>
+              ) : (
+                renderProductList(foundProducts)
+              )}
+            </section>
+          ) : (
+            <section className="product-highlights">
+              <h3>Produtos em destaque</h3>
+              {loadingProducts ? (
+                <p>Carregando produtos...</p>
+              ) : error ? (
+                <p style={{ color: "red" }}>{error}</p>
+              ) : highlightProducts.length === 0 ? (
+                <p>Nenhum produto em destaque encontrado.</p>
+              ) : (
+                renderProductList(highlightProducts)
+              )}
+            </section>
+          )}
+        </aside>
 
         {/* Mapa + resultados */}
-        <div className="main-map-area">
-          <section className="results-section">
-            <div
-              className="map-area"
-              style={{
-                position: "relative",
-                height: isEmbed ? "100vh" : "600px",
-              }}
-            >
-              {/* Botão flutuante QUERO REVENDER */}
-              <a
-                className="cta-revendedor"
-                href="https://paviloche.com.br/seja-um-revendedor/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                QUERO REVENDER
-              </a>
-
+        <section className="main-map-area">
+          <div className="map-wrap">
+            <div className="map-area">
               <MapComponent
                 center={mapCenter}
                 zoom={mapZoom}
@@ -385,51 +340,81 @@ export default function App() {
               />
             </div>
 
-            {selectedProduct ? (
-              <>
-                <h2 className="locals-count">
-                  {pdvResults.length} locais mais próximos
-                </h2>
+            {/* Botão flutuante sobre o mapa */}
+            <a
+              className="cta-reseller"
+              href="https://paviloche.com.br/seja-um-revendedor/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Quero revender
+            </a>
+          </div>
 
-                <div id="pdv-results" className="pdv-list">
-                  {loadingPdvs ? (
-                    <p>Buscando pontos de venda...</p>
-                  ) : error ? (
-                    <p style={{ color: "red" }}>{error}</p>
-                  ) : pdvResults.length === 0 ? (
-                    <p>
-                      Nenhum ponto de venda encontrado para este produto na sua
-                      localização.
-                    </p>
-                  ) : (
-                    pdvResults.map((pdv) => (
-                      <div key={pdv.id} className="pdv-item">
-                        <h4>{pdv.nome}</h4>
-                        <p>
-                          Endereço: {pdv.endereco}, {pdv.cep}
-                        </p>
-                        <p>Distância: {pdv.distancia_km} km</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="message-overlay-above-map">
-                <h2>Escolha primeiro um produto para encontrar em lojas próximas</h2>
+          {/* Detalhes do produto selecionado (inclui "Saiba mais" somente quando há produto selecionado) */}
+          {selectedProduct && (
+            <div className="selected-product-details" style={{ marginTop: 16 }}>
+              <h3 className="product-title">{selectedProduct.nome}</h3>
+              <p className="product-description">
+                {selectedProduct.volume} - {selectedProduct.nome}
+              </p>
+              <div className="product-card compact">
+                <img src={selectedProduct.imagem_url} alt={selectedProduct.nome} />
+                {selectedProduct.em_destaque && <span className="highlight-tag">NOVO</span>}
               </div>
-            )}
-          </section>
-        </div>
+              {selectedProduct.produto_url && (
+                <a
+                  href={selectedProduct.produto_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="saba-mais-link"
+                >
+                  SAIBA MAIS &gt;
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Lista de PDVs */}
+          {selectedProduct ? (
+            <>
+              <h2 className="locals-count" style={{ marginTop: 24 }}>
+                {pdvResults.length} locais mais próximos
+              </h2>
+
+              <div id="pdv-results" className="pdv-list">
+                {loadingPdvs ? (
+                  <p>Buscando pontos de venda...</p>
+                ) : error ? (
+                  <p style={{ color: "red" }}>{error}</p>
+                ) : pdvResults.length === 0 ? (
+                  <p>Nenhum ponto de venda encontrado para este produto na sua localização.</p>
+                ) : (
+                  pdvResults.map((pdv) => (
+                    <div key={pdv.id} className="pdv-item">
+                      <h4>{pdv.nome}</h4>
+                      <p>
+                        Endereço: {pdv.endereco}, {pdv.cep}
+                      </p>
+                      <p>Distância: {pdv.distancia_km} km</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="message-overlay-above-map" style={{ marginTop: 24 }}>
+              <h2>Escolha primeiro um produto para encontrar em lojas próximas</h2>
+            </div>
+          )}
+        </section>
       </main>
 
+      {/* Modal de localização */}
       {showLocationModal && (
         <div className="modal">
           <div className="modal-content">
-            <span
-              className="close-button"
-              onClick={() => setShowLocationModal(false)}
-            >
+            <span className="close-button" onClick={() => setShowLocationModal(false)}>
               &times;
             </span>
             <h2>Onde você quer encontrar nossos produtos?</h2>
