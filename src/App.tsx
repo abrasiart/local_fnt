@@ -260,4 +260,178 @@ export default function App() {
                 id="product-search"
                 placeholder="O que você quer encontrar?"
                 value={productSearchTerm}
-                onChange={(e) => setPr
+                onChange={(e) => setProductSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
+              />
+              <button onClick={handleProductSearch}>Pesquisar</button>
+            </div>
+
+            {/* Detalhes do produto selecionado */}
+            {selectedProduct && (
+              <div className="selected-product-details">
+                <h3 className="product-title">{selectedProduct.nome}</h3>
+                <p className="product-description">
+                  {selectedProduct.volume} - {selectedProduct.nome}
+                </p>
+                <div className="product-card compact">
+                  <img src={selectedProduct.imagem_url} alt={selectedProduct.nome} />
+                  {selectedProduct.em_destaque && <span className="highlight-tag">NOVO</span>}
+                </div>
+
+                {/* SAIBA MAIS: usa produto_url ou fallback para busca */}
+                <a
+                  className="saiba-mais-link"
+                  href={getProductUrl(selectedProduct)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  SAIBA MAIS &gt;
+                </a>
+              </div>
+            )}
+
+            {/* Resultados da busca */}
+            {productSearchTerm.trim() !== "" && (
+              <div className="product-search-results">
+                <h3>Resultados da Busca</h3>
+                <div className="product-grid">
+                  {loadingProductSearch ? (
+                    <p>Buscando produtos...</p>
+                  ) : error ? (
+                    <p style={{ color: "red" }}>{error}</p>
+                  ) : foundProducts.length === 0 ? (
+                    <p>Nenhum produto encontrado para "{productSearchTerm}".</p>
+                  ) : (
+                    foundProducts.map((p) => (
+                      <div key={p.id} className="product-card">
+                        <img src={p.imagem_url} alt={p.nome} />
+                        <h4>{p.nome}</h4>
+                        <p>{p.volume}</p>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button onClick={() => handleSelectProductAndSearchPdvs(p)}>Encontrar</button>
+                          <a
+                            className="saiba-mais-link inline"
+                            href={getProductUrl(p)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Saiba mais
+                          </a>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Destaques */}
+            {productSearchTerm.trim() === "" && !selectedProduct && (
+              <div className="product-highlights">
+                <h3>Produtos em destaque</h3>
+                <div id="highlight-products-list" className="product-grid">
+                  {loadingProducts ? (
+                    <p>Carregando produtos...</p>
+                  ) : error ? (
+                    <p style={{ color: "red" }}>{error}</p>
+                  ) : highlightProducts.length === 0 ? (
+                    <p>Nenhum produto em destaque encontrado.</p>
+                  ) : (
+                    highlightProducts.map((p) => (
+                      <div key={p.id} className="product-card">
+                        {p.em_destaque && <span className="highlight-tag">NOVO</span>}
+                        <img src={p.imagem_url} alt={p.nome} />
+                        <h4>{p.nome}</h4>
+                        <p>{p.volume}</p>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button onClick={() => handleSelectProductAndSearchPdvs(p)}>Encontrar</button>
+                          <a
+                            className="saiba-mais-link inline"
+                            href={getProductUrl(p)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Saiba mais
+                          </a>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Mapa + resultados */}
+        <div className="main-map-area">
+          <section className="results-section">
+            <div className="map-area" style={{ height: "600px" }}>
+              <MapComponent
+                center={mapCenter}
+                zoom={mapZoom}
+                points={pdvResults}
+                isBlurred={showLocationModal || !userLocationCoords}
+              />
+            </div>
+
+            {selectedProduct ? (
+              <>
+                <h2 className="locals-count">{pdvResults.length} locais mais próximos</h2>
+                <a href="#" className="saiba-mais-link">SAIBA MAIS &gt;</a>
+
+                <div id="pdv-results" className="pdv-list">
+                  {loadingPdvs ? (
+                    <p>Buscando pontos de venda...</p>
+                  ) : error ? (
+                    <p style={{ color: "red" }}>{error}</p>
+                  ) : pdvResults.length === 0 ? (
+                    <p>Nenhum ponto de venda encontrado para este produto na sua localização.</p>
+                  ) : (
+                    pdvResults.map((pdv) => (
+                      <div key={pdv.id} className="pdv-item">
+                        <h4>{pdv.nome}</h4>
+                        <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
+                        <p>Distância: {pdv.distancia_km} km</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="message-overlay-above-map">
+                <h2>Escolha primeiro um produto para encontrar em lojas próximas</h2>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
+
+      {/* Modal de localização */}
+      {showLocationModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close-button" onClick={() => setShowLocationModal(false)}>&times;</span>
+            <h2>Onde você quer encontrar nossos produtos?</h2>
+            <div className="location-input-group">
+              <input
+                type="text"
+                id="cep-input"
+                placeholder="Informe sua localização (CEP)"
+                value={cep}
+                onChange={(e) => setCep(e.target.value)}
+              />
+              <button onClick={handleSearchByCepClick}>Buscar</button>
+            </div>
+            <p className="or-divider">OU</p>
+            <button className="use-my-location-button" onClick={handleUseMyLocation}>
+              Usar minha localização
+            </button>
+            <p className="cep-hint"><small>Após informar seu local, escolha um produto na lateral.</small></p>
+            <div className="powered-by">Desenvolvido por Paviloche</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
