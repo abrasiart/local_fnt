@@ -219,18 +219,18 @@ export default function App() {
         <div className="sidebar-left">
           <h2 className="slogan-title">Qual produto você quer encontrar?</h2>
 
-          <section className="search-section">
-            <div className="search-bar">
-              <input
-                type="text"
-                id="product-search"
-                placeholder="Digite o nome do produto"
-                value={productSearchTerm}
-                onChange={(e) => setProductSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
-              />
-              <button onClick={handleProductSearch}>Pesquisar</button>
-            </div>
+          <div className="search-section">
+  <div className="search-bar">
+    <input
+      type="text"
+      id="product-search"
+      placeholder="Qual produto você quer encontrar?"
+      value={productSearchTerm}
+      onChange={(e) => setProductSearchTerm(e.target.value)}
+      onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
+    />
+    <button onClick={handleProductSearch}>Buscar</button>
+  </div>
 
             {selectedProduct && (
               <div className="selected-product-details">
