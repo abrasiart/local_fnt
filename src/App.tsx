@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import MapComponent from "./MapComponent";
 import { API_BASE } from "./config";
 
-// ===== Tipos =====
 type Product = {
   id: string;
   nome: string;
@@ -22,40 +21,31 @@ type PointOfSale = {
   distancia_km: number;
 };
 
-// ===== Componente =====
-const App: React.FC = () => {
+export default function App() {
   const BACKEND_URL = API_BASE;
 
-  // Localização / Modal
   const [showLocationModal, setShowLocationModal] = useState<boolean>(true);
-  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null); // [lon, lat]
+  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null);
   const [userLocationAddress, setUserLocationAddress] = useState<string | null>(null);
   const [cep, setCep] = useState<string>("");
 
-  // Produtos
   const [highlightProducts, setHighlightProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
 
-  // Busca de produtos
   const [productSearchTerm, setProductSearchTerm] = useState<string>("");
   const [foundProducts, setFoundProducts] = useState<Product[]>([]);
   const [loadingProductSearch, setLoadingProductSearch] = useState<boolean>(false);
 
-  // Produto selecionado
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // PDVs
   const [pdvResults, setPdvResults] = useState<PointOfSale[]>([]);
   const [loadingPdvs, setLoadingPdvs] = useState<boolean>(false);
 
-  // Erros
   const [error, setError] = useState<string | null>(null);
 
-  // Mapa
   const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]);
   const [mapZoom, setMapZoom] = useState<number>(11);
 
-  // ===== Destaques ao montar =====
   useEffect(() => {
     (async () => {
       try {
@@ -72,10 +62,6 @@ const App: React.FC = () => {
     })();
   }, [BACKEND_URL]);
 
-  // ===== Utilidades =====
-  const cleanCep = (value: string) => value.replace(/\D/g, "");
-
-  // ===== Buscar PDVs (CEP ou Lat/Lon) =====
   const searchPdvsByLocation = async (params: { cep?: string; lat?: number; lon?: number }) => {
     setLoadingPdvs(true);
     setError(null);
@@ -87,15 +73,14 @@ const App: React.FC = () => {
 
     try {
       if (params.cep) {
-        const onlyDigits = cleanCep(params.cep);
-        if (onlyDigits.length !== 8) {
+        const cleanCep = params.cep.replace(/\D/g, "");
+        if (cleanCep.length !== 8) {
           setError("CEP inválido. Deve conter 8 dígitos.");
           setLoadingPdvs(false);
           setShowLocationModal(true);
           return;
         }
-        // O backend já geocodifica e retorna PDVs próximos, ordenados por distância
-        const resp = await fetch(`${BACKEND_URL}/pdvs/proximos?cep=${onlyDigits}`);
+        const resp = await fetch(`${BACKEND_URL}/pdvs/proximos?cep=${cleanCep}`);
         const data = await resp.json();
         if (!resp.ok || !Array.isArray(data) || data.length === 0) {
           setError((data && data.erro) || "Não foi possível validar o CEP. Tente novamente.");
@@ -103,7 +88,6 @@ const App: React.FC = () => {
           setShowLocationModal(true);
           return;
         }
-        // Para endereço/coords do header: usamos o primeiro item como referência
         const first = data[0];
         if (first?.latitude && first?.longitude) {
           coordsFromApi = [parseFloat(first.longitude), parseFloat(first.latitude)];
@@ -115,20 +99,14 @@ const App: React.FC = () => {
           return;
         }
       } else if (params.lat && params.lon) {
-        // Usar localização atual
         coordsFromApi = [params.lon, params.lat];
-
-        // Tenta resolver endereço via backend (se a rota existir)
         try {
+          const KEY = "0b4186d795a547769c0272db912585c3";
           const r = await fetch(
-            `${BACKEND_URL}/geocode/reverse?lat=${params.lat}&lon=${params.lon}`
+            `https://api.opencagedata.com/geocode/v1/json?q=${params.lat}+${params.lon}&key=${KEY}&pretty=0&no_annotations=1`
           );
-          if (r.ok) {
-            const j = await r.json();
-            addressFromApi = j?.formatted ?? `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
-          } else {
-            addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
-          }
+          const j = await r.json();
+          addressFromApi = j?.results?.[0]?.formatted ?? `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
         } catch {
           addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
         }
@@ -141,9 +119,8 @@ const App: React.FC = () => {
 
       setUserLocationCoords(coordsFromApi);
       setUserLocationAddress(addressFromApi);
-
       setLoadingPdvs(false);
-      setSelectedProduct(null); // força a mensagem “Escolha um produto…” até selecionar
+      setSelectedProduct(null);
     } catch (e: any) {
       console.error("ERRO em searchPdvsByLocation:", e);
       setError(`Erro ao obter sua localização: ${e.message}. Tente novamente.`);
@@ -176,7 +153,6 @@ const App: React.FC = () => {
     );
   };
 
-  // ===== Busca de produtos por texto =====
   const handleProductSearch = async () => {
     if (!productSearchTerm.trim()) {
       setFoundProducts([]);
@@ -202,19 +178,16 @@ const App: React.FC = () => {
     }
   };
 
-  // ===== Seleção de produto & PDVs =====
   const handleSelectProductAndSearchPdvs = async (product: Product) => {
     if (!userLocationCoords) {
       setShowLocationModal(true);
       setError("Por favor, informe sua localização primeiro para encontrar lojas.");
       return;
     }
-
     setSelectedProduct(product);
     setLoadingPdvs(true);
     setError(null);
     setPdvResults([]);
-
     try {
       const [lon, lat] = userLocationCoords;
       const url = `${BACKEND_URL}/pdvs/proximos/produto?productId=${product.id}&lat=${lat}&lon=${lon}`;
@@ -225,7 +198,6 @@ const App: React.FC = () => {
       }
       const data: PointOfSale[] = await resp.json();
       setPdvResults(data);
-
       if (data.length > 0) {
         const first = data[0];
         setMapCenter([first.longitude, first.latitude]);
@@ -240,21 +212,19 @@ const App: React.FC = () => {
     }
   };
 
-  // ===== Render =====
   return (
-    <div className="App no-header">
-      {/* sem header */}
-      <main className="main-content-layout fullheight">
-        {/* Sidebar esquerda */}
+    <div className="App">
+      <main className="main-content-layout">
+
         <div className="sidebar-left">
-          <h2 className="slogan-title">Sempre tem um ponto de venda Paviloche pertinho de você!</h2>
+          <h2 className="slogan-title">Qual produto você quer encontrar?</h2>
 
           <section className="search-section">
             <div className="search-bar">
               <input
                 type="text"
                 id="product-search"
-                placeholder="O que você quer encontrar?"
+                placeholder="Digite o nome do produto"
                 value={productSearchTerm}
                 onChange={(e) => setProductSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
@@ -262,7 +232,6 @@ const App: React.FC = () => {
               <button onClick={handleProductSearch}>Pesquisar</button>
             </div>
 
-            {/* Detalhes do produto selecionado (mostra “Saiba mais” aqui, somente quando selecionado) */}
             {selectedProduct && (
               <div className="selected-product-details">
                 <h3 className="product-title">{selectedProduct.nome}</h3>
@@ -273,12 +242,15 @@ const App: React.FC = () => {
                   <img src={selectedProduct.imagem_url} alt={selectedProduct.nome} />
                   {selectedProduct.em_destaque && <span className="highlight-tag">NOVO</span>}
                 </div>
-                {selectedProduct.produto_url && (
+                {selectedProduct.produto_url ? (
+                  <a className="saba-mais-link" href={selectedProduct.produto_url} target="_blank" rel="noreferrer">
+                    SAIBA MAIS &gt;
+                  </a>
+                ) : (
                   <a
-                    href={selectedProduct.produto_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="saba-mais-link"
+                    href={`https://paviloche.com.br/?s=${encodeURIComponent(selectedProduct.nome)}`}
+                    target="_blank" rel="noreferrer"
                   >
                     SAIBA MAIS &gt;
                   </a>
@@ -286,8 +258,7 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Resultados da busca por texto */}
-            {productSearchTerm.trim() !== "" && (
+            {productSearchTerm.trim() !== "" ? (
               <div className="product-search-results">
                 <h3>Resultados da Busca</h3>
                 <div className="product-grid">
@@ -310,10 +281,7 @@ const App: React.FC = () => {
                   )}
                 </div>
               </div>
-            )}
-
-            {/* Destaques (aparece quando não está pesquisando e não há produto selecionado) */}
-            {productSearchTerm.trim() === "" && !selectedProduct && (
+            ) : !selectedProduct ? (
               <div className="product-highlights">
                 <h3>Produtos em destaque</h3>
                 <div id="highlight-products-list" className="product-grid">
@@ -336,27 +304,24 @@ const App: React.FC = () => {
                   )}
                 </div>
               </div>
-            )}
+            ) : null}
           </section>
         </div>
 
-        {/* Mapa + resultados */}
         <div className="main-map-area">
           <section className="results-section">
-            <div className="map-area">
+            <div className="map-area" style={{ height: "600px" }}>
               <MapComponent
                 center={mapCenter}
                 zoom={mapZoom}
                 points={pdvResults}
                 isBlurred={showLocationModal || !userLocationCoords}
               />
-
-              {/* Botão fixo sobre o mapa */}
               <a
+                className="cta-revendedor"
                 href="https://paviloche.com.br/seja-um-revendedor/"
                 target="_blank"
-                rel="noopener noreferrer"
-                className="btn-revendedor"
+                rel="noreferrer"
               >
                 Quero revender
               </a>
@@ -365,6 +330,8 @@ const App: React.FC = () => {
             {selectedProduct ? (
               <>
                 <h2 className="locals-count">{pdvResults.length} locais mais próximos</h2>
+                <a href="#" className="saba-mais-link">SAIBA MAIS &gt;</a>
+
                 <div id="pdv-results" className="pdv-list">
                   {loadingPdvs ? (
                     <p>Buscando pontos de venda...</p>
@@ -376,9 +343,7 @@ const App: React.FC = () => {
                     pdvResults.map((pdv) => (
                       <div key={pdv.id} className="pdv-item">
                         <h4>{pdv.nome}</h4>
-                        <p>
-                          Endereço: {pdv.endereco}, {pdv.cep}
-                        </p>
+                        <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
                         <p>Distância: {pdv.distancia_km} km</p>
                       </div>
                     ))
@@ -392,15 +357,13 @@ const App: React.FC = () => {
             )}
           </section>
         </div>
+
       </main>
 
-      {/* Modal de localização */}
       {showLocationModal && (
         <div className="modal">
           <div className="modal-content">
-            <span className="close-button" onClick={() => setShowLocationModal(false)}>
-              &times;
-            </span>
+            <span className="close-button" onClick={() => setShowLocationModal(false)}>&times;</span>
             <h2>Onde você quer encontrar nossos produtos?</h2>
             <div className="location-input-group">
               <input
@@ -416,15 +379,11 @@ const App: React.FC = () => {
             <button className="use-my-location-button" onClick={handleUseMyLocation}>
               Usar minha localização
             </button>
-            <p className="cep-hint">
-              <small>Após informar seu local, escolha um produto na lateral.</small>
-            </p>
+            <p className="cep-hint"><small>Após informar seu local, escolha um produto na lateral.</small></p>
             <div className="powered-by">Desenvolvido por Paviloche</div>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default App;
+}
