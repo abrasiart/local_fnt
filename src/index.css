@@ -839,4 +839,91 @@ html, body, #root, .App {
   .sidebar-left { max-height: none; }
   .map-area { height: 60vh; }
 }
+/* ==== Search bar: remove qualquer ícone anterior e mantém só o botão ==== */
+.search-section .search-bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.search-section .search-bar input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+}
+.search-section .search-bar button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.search-section .search-bar button:hover { background: var(--brand-600); }
+/* Se existir algum seletor do “ícone de lupa”, garantimos que suma */
+.search-section .search-bar .search-icon,
+.search-section .search-bar .icon,
+.search-section .search-bar button::after { display: none !important; content: none !important; }
+
+/* ==== PRODUCT CARD: 130px de altura, imagem 90px, textos e botão alinhados à esquerda ==== */
+.product-card {
+  min-height: 130px;                /* altura desejada */
+  grid-template-columns: 90px 1fr;  /* imagem maior */
+  padding: 12px 12px 48px;          /* espaço pro botão */
+}
+
+.product-card img,
+.sidebar-left .product-card img {
+  width: 90px !important;           /* imagem 90px */
+  max-width: none !important;
+  height: auto;
+  display: block;
+}
+
+.product-card .info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;           /* alinha tudo à esquerda */
+  gap: 4px;
+}
+
+.product-card h4 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.25;
+  color: var(--text);
+  text-align: left;                  /* garante alinhamento à esquerda */
+}
+
+.product-card .volume {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: left;                  /* alinhado à esquerda */
+}
+
+/* Botão no canto inferior ESQUERDO do card */
+.product-card button {
+  position: absolute;
+  left: 12px;                        /* esquerda */
+  right: auto;                       /* remove âncora direita */
+  bottom: 12px;
+  padding: 8px 12px;
+  font-size: 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(91, 66, 189, 0.25);
+}
+.product-card button:hover { background: var(--brand-600); }
+
 
