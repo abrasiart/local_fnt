@@ -471,7 +471,7 @@ header nav a:hover {
 }
 
 /* Media queries para responsividade */
-@media (max-width: 900px) {
+@media (max-width: 1080px) {
     .main-content-layout {
         flex-direction: column;
         gap: 15px;
@@ -518,7 +518,7 @@ header nav a:hover {
 /* Layout do card no menu lateral */
 .sidebar-left .product-card{
   display: grid;
-  grid-template-columns: 96px 1fr auto; /* imagem | texto | botão */
+  grid-template-columns: 260px 1fr auto; /* imagem | texto | botão */
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
@@ -911,7 +911,7 @@ html, body, #root, .App {
 /* Botão no canto inferior ESQUERDO do card */
 .product-card button {
   position: absolute;
-  left: 12px;                        /* esquerda */
+  left: 240px;                        /* esquerda */
   right: auto;                       /* remove âncora direita */
   bottom: 12px;
   padding: 8px 12px;
