@@ -911,7 +911,7 @@ html, body, #root, .App {
 /* Botão no canto inferior ESQUERDO do card */
 .product-card button {
   position: absolute;
-  left: 240px;                        /* esquerda */
+  left: 200px;                        /* esquerda */
   right: auto;                       /* remove âncora direita */
   bottom: 12px;
   padding: 8px 12px;
