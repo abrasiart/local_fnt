@@ -926,4 +926,75 @@ html, body, #root, .App {
 }
 .product-card button:hover { background: var(--brand-600); }
 
+/* Desktop: deixa a coluna sem limite de altura */
+@media (min-width: 999px) {
+  .sidebar-left {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .product-highlights,
+  .product-grid {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+/* ===== MOBILE FIX ===== */
+@media (max-width: 998px) {
+  /* 1) Empilha as colunas (lista em cima, mapa embaixo) */
+  .main-content-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* 2) Libera a coluna esquerda para crescer e permitir rolagem da página */
+  .sidebar-left {
+    position: static !important;
+    width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    text-align: left !important;
+  }
+
+  /* 3) Mapa ocupa a largura toda e ganha uma altura de viewport (com espaço para header/botões) */
+  .main-map-area {
+    order: 2;               /* garante que venha depois da lista */
+    width: 100% !important;
+  }
+
+  .map-area {
+    width: 100% !important;
+    height: 60vh !important; /* ajuste se quiser mais/menos mapa: 50–70vh */
+    min-height: 320px;       /* altura mínima de segurança */
+  }
+
+  /* 4) Garante que a página role no mobile */
+  html, body {
+    height: auto !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 5) (Opcional) Ajustes visuais do card no mobile */
+  .product-card {
+    padding: 12px !important;
+  }
+  .product-content {
+    width: 100% !important;
+  }
+  .product-meta h4,
+  .product-meta p {
+    text-align: left !important; /* mantém alinhado à esquerda */
+  }
+
+  /* 6) Botão "Quero revender" não atrapalha (desce um pouco no mobile) */
+  .reseller-cta {
+    right: 12px !important;
+    bottom: 12px !important;
+    z-index: 5;
+  }
+}
+
 
