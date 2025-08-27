@@ -289,7 +289,7 @@ const App: React.FC = () => {
 
         <div
           className="product-content"
-          style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 100 }}
+          style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 100, width: 310, height: 90, boxSizing: "border-box" }}
         >
           <img
             src={product.imagem_url}
