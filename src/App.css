@@ -46,6 +46,7 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   box-shadow:var(--shadow);
   overflow:auto;
   max-width:320px;            /* garante que não expanda */
+  overflow-y: auto;
 }
 
 .search-label{
