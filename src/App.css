@@ -83,7 +83,7 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   width:100%; overflow:hidden;
 }
 .product-thumb{
-  width:84px; height:84px; object-fit:contain;
+  width:100px; height:100px; object-fit:contain;
   border-radius:10px; background:#fafafa;
 }
 .product-info{ display:flex; flex-direction:column; gap:4px; padding-right:8px }
