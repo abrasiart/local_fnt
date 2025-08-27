@@ -258,14 +258,14 @@ const App: React.FC = () => {
       <div
         key={product.id}
         className="product-card"
-        style={{
-          border: "1px solid #eee",
-          borderRadius: 10,
-          padding: 12,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-          marginBottom: 14,
-          background: "#fff",
-          position: "relative",
+         style={{
+    width: "100%",            // <- força ocupar toda a largura disponível
+    border: "1px solid #eee",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+    position: "relative",
         }}
       >
         {product.em_destaque && (
