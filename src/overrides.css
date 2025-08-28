@@ -160,3 +160,32 @@
     min-height: 420px;
   }
 }
+/* O contêiner geral do mapa */
+.main-map-area .map-area {
+  position: relative;
+  /* escolha um range coerente; antes era ~600px */
+  height: clamp(480px, 68vh, 640px);
+  margin: 0;
+  padding: 0;
+}
+
+/* Garante que o canvas do mapBox ocupe tudo */
+#map, .map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Botão "Quero revender" preso no canto */
+.revender-cta {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+}
+
+/* Se tiver colocado algum min-height em wrappers, remova aqui */
+.results-section,
+.main-map-area {
+  min-height: unset;
+}
+
