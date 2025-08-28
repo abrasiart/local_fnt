@@ -22,7 +22,7 @@ type PointOfSale = {
   distancia_km: number;
 };
 
-export default function App(): JSX.Element {
+export default function App() {
   const BACKEND_URL = API_BASE;
 
   // Localização / Modal
@@ -97,7 +97,6 @@ export default function App(): JSX.Element {
           return;
         }
 
-        // backend já retorna PDVs próximos e conseguimos extrair um ponto para centralizar o mapa
         const resp = await fetch(`${BACKEND_URL}/pdvs/proximos?cep=${cleanCep}`);
         const data = await resp.json();
         if (!resp.ok || !Array.isArray(data) || data.length === 0) {
@@ -107,7 +106,6 @@ export default function App(): JSX.Element {
           return;
         }
 
-        // Usamos o primeiro PDV como referência para centralizar
         const first = data[0];
         if (first?.latitude && first?.longitude) {
           coordsFromApi = [parseFloat(first.longitude), parseFloat(first.latitude)];
@@ -131,7 +129,6 @@ export default function App(): JSX.Element {
       setUserLocationCoords(coordsFromApi);
       setUserLocationAddress(addressFromApi);
       setLoadingPdvs(false);
-      // limpamos selecionado ao apenas informar local (o usuário ainda vai escolher o produto)
       setSelectedProduct(null);
     } catch (e: any) {
       console.error("ERRO em searchPdvsByLocation:", e);
@@ -284,7 +281,7 @@ export default function App(): JSX.Element {
           )}
 
           {/* Resultados da busca */}
-          {showSearchResults && (
+          {!showSelected && productSearchTerm.trim() !== "" && (
             <section className="product-search-results">
               <h3>Resultados da Busca</h3>
               <div className="product-grid">
@@ -318,7 +315,7 @@ export default function App(): JSX.Element {
           )}
 
           {/* Destaques */}
-          {showHighlights && (
+          {!showSelected && productSearchTerm.trim() === "" && (
             <section className="product-highlights">
               <h3 style={{ margin: "8px 0px 12px", color: "rgb(75, 62, 144)" }}>
                 Produtos em destaque
