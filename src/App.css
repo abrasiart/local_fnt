@@ -219,3 +219,75 @@ header nav a:hover{ opacity:1; text-decoration:underline }
   flex: 1 1 auto;
   min-height: 0; /* evita estourar o container */
 }
+
+/* Largura fixa da coluna esquerda (se quiser manter) */
+.sidebar-left {
+  width: 320px;
+  max-width: 340px;
+}
+
+/* Card com grade estável: IMG à esquerda, textos à direita, botão à direita */
+.sidebar-left .product-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--card-border, #e6ecf6);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px #1c184814;
+  padding: 12px 14px;
+}
+
+.sidebar-left .product-card + .product-card {
+  margin-top: 16px;
+}
+
+/* Grade do conteúdo do card */
+.sidebar-left .product-card .product-content {
+  display: grid;
+  grid-template-columns: 90px 1fr;             /* 90px de imagem + conteúdo */
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "img title"
+    "img volume"
+    "img actions";
+  column-gap: 12px;
+  align-items: center;
+  min-height: 130px;                           /* altura pedida */
+}
+
+/* Imagem do produto */
+.sidebar-left .product-card .product-image,
+.sidebar-left .product-card img {
+  grid-area: img;
+  width: 90px !important;                      /* garante 90px */
+  height: auto;
+  object-fit: contain;
+}
+
+/* Título, volume e ações em suas áreas */
+.sidebar-left .product-card .product-title {    /* ajuste o seletor conforme seu HTML */
+  grid-area: title;
+  margin: 0 0 4px 0;
+  line-height: 1.1;
+  font-weight: 700;
+  text-align: left;
+}
+
+.sidebar-left .product-card .product-volume {
+  grid-area: volume;
+  margin: 0 0 8px 0;
+  color: #6a6a6a;
+  text-align: left;
+}
+
+.sidebar-left .product-card .product-actions {
+  grid-area: actions;
+  justify-self: end;                           /* botão alinhado à direita */
+}
+
+/* Selo NOVO preso no topo-esquerdo do card */
+.sidebar-left .product-card .highlight-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
