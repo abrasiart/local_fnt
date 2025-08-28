@@ -22,27 +22,23 @@ type PointOfSale = {
   distancia_km: number;
 };
 
-const App: React.FC = () => {
+export default function App(): JSX.Element {
   const BACKEND_URL = API_BASE;
 
   // Localização / Modal
   const [showLocationModal, setShowLocationModal] = useState<boolean>(true);
-  const [userLocationCoords, setUserLocationCoords] =
-    useState<[number, number] | null>(null); // [lon, lat]
-  const [userLocationAddress, setUserLocationAddress] = useState<string | null>(
-    null
-  );
+  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null); // [lon, lat]
+  const [userLocationAddress, setUserLocationAddress] = useState<string | null>(null);
   const [cep, setCep] = useState<string>("");
 
-  // Produtos
+  // Produtos (destaques)
   const [highlightProducts, setHighlightProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
 
   // Busca de produtos
   const [productSearchTerm, setProductSearchTerm] = useState<string>("");
   const [foundProducts, setFoundProducts] = useState<Product[]>([]);
-  const [loadingProductSearch, setLoadingProductSearch] =
-    useState<boolean>(false);
+  const [loadingProductSearch, setLoadingProductSearch] = useState<boolean>(false);
 
   // Produto selecionado
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -55,19 +51,17 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Mapa
-  const [mapCenter, setMapCenter] = useState<[number, number]>([
-    -48.847, -26.304,
-  ]);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]);
   const [mapZoom, setMapZoom] = useState<number>(11);
 
-  // Destaques ao montar (carrega e limita a 5 no render)
+  // Carregar destaques ao montar (limitando a 5)
   useEffect(() => {
     (async () => {
       try {
         const resp = await fetch(`${BACKEND_URL}/produtos/destaque`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data: Product[] = await resp.json();
-        setHighlightProducts(data);
+        setHighlightProducts((data || []).slice(0, 5));
       } catch (e: any) {
         console.error("Erro ao buscar destaques:", e);
         setError("Não foi possível carregar os produtos em destaque.");
@@ -77,12 +71,14 @@ const App: React.FC = () => {
     })();
   }, [BACKEND_URL]);
 
+  // Helpers de exibição
+  const showSelected = !!selectedProduct;
+  const showSearchResults =
+    !showSelected && productSearchTerm.trim() !== "" && foundProducts.length >= 0;
+  const showHighlights = !showSelected && !showSearchResults;
+
   // Buscar PDVs por CEP ou Lat/Lon
-  const searchPdvsByLocation = async (params: {
-    cep?: string;
-    lat?: number;
-    lon?: number;
-  }) => {
+  const searchPdvsByLocation = async (params: { cep?: string; lat?: number; lon?: number }) => {
     setLoadingPdvs(true);
     setError(null);
     setPdvResults([]);
@@ -100,47 +96,31 @@ const App: React.FC = () => {
           setShowLocationModal(true);
           return;
         }
+
+        // backend já retorna PDVs próximos e conseguimos extrair um ponto para centralizar o mapa
         const resp = await fetch(`${BACKEND_URL}/pdvs/proximos?cep=${cleanCep}`);
         const data = await resp.json();
         if (!resp.ok || !Array.isArray(data) || data.length === 0) {
-          setError(
-            (data && data.erro) ||
-              "Não foi possível validar o CEP. Tente novamente."
-          );
+          setError((data && data.erro) || "Não foi possível validar o CEP. Tente novamente.");
           setLoadingPdvs(false);
           setShowLocationModal(true);
           return;
         }
+
+        // Usamos o primeiro PDV como referência para centralizar
         const first = data[0];
         if (first?.latitude && first?.longitude) {
-          coordsFromApi = [
-            parseFloat(first.longitude),
-            parseFloat(first.latitude),
-          ];
+          coordsFromApi = [parseFloat(first.longitude), parseFloat(first.latitude)];
           addressFromApi = first.endereco;
         } else {
-          setError(
-            "CEP válido, mas sem coordenadas para exibir no mapa. Tente outro CEP."
-          );
+          setError("CEP válido, mas sem coordenadas para exibir no mapa. Tente outro CEP.");
           setLoadingPdvs(false);
           setShowLocationModal(true);
           return;
         }
       } else if (params.lat && params.lon) {
-        // usar localização atual
         coordsFromApi = [params.lon, params.lat];
-        try {
-          const KEY = "0b4186d795a547769c0272db912585c3";
-          const r = await fetch(
-            `https://api.opencagedata.com/geocode/v1/json?q=${params.lat}+${params.lon}&key=${KEY}&pretty=0&no_annotations=1`
-          );
-          const j = await r.json();
-          addressFromApi =
-            j?.results?.[0]?.formatted ??
-            `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
-        } catch {
-          addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
-        }
+        addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
       } else {
         setError("Nenhum CEP ou localização fornecida para busca.");
         setLoadingPdvs(false);
@@ -151,6 +131,7 @@ const App: React.FC = () => {
       setUserLocationCoords(coordsFromApi);
       setUserLocationAddress(addressFromApi);
       setLoadingPdvs(false);
+      // limpamos selecionado ao apenas informar local (o usuário ainda vai escolher o produto)
       setSelectedProduct(null);
     } catch (e: any) {
       console.error("ERRO em searchPdvsByLocation:", e);
@@ -176,9 +157,7 @@ const App: React.FC = () => {
         await searchPdvsByLocation({ lat: latitude, lon: longitude });
       },
       (geoError) => {
-        setError(
-          `Erro ao obter sua localização: ${geoError.message}. Por favor, digite seu CEP.`
-        );
+        setError(`Erro ao obter sua localização: ${geoError.message}. Por favor, digite seu CEP.`);
         setLoadingPdvs(false);
         setShowLocationModal(true);
       },
@@ -196,15 +175,11 @@ const App: React.FC = () => {
     setFoundProducts([]);
     try {
       const resp = await fetch(
-        `${BACKEND_URL}/produtos/buscar?q=${encodeURIComponent(
-          productSearchTerm
-        )}`
+        `${BACKEND_URL}/produtos/buscar?q=${encodeURIComponent(productSearchTerm)}`
       );
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
-        throw new Error(
-          `Erro ao buscar produtos: ${errData.erro || resp.statusText}`
-        );
+        throw new Error(`Erro ao buscar produtos: ${errData.erro || resp.statusText}`);
       }
       const data: Product[] = await resp.json();
       setFoundProducts(data);
@@ -221,19 +196,23 @@ const App: React.FC = () => {
       setError("Por favor, informe sua localização primeiro para encontrar lojas.");
       return;
     }
+
+    // Limpa busca e resultados para mostrar apenas o produto selecionado
+    setProductSearchTerm("");
+    setFoundProducts([]);
+
     setSelectedProduct(product);
     setLoadingPdvs(true);
     setError(null);
     setPdvResults([]);
+
     try {
       const [lon, lat] = userLocationCoords;
       const url = `${BACKEND_URL}/pdvs/proximos/produto?productId=${product.id}&lat=${lat}&lon=${lon}`;
       const resp = await fetch(url);
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
-        throw new Error(
-          `Erro ao buscar PDVs para o produto: ${errData.erro || resp.statusText}`
-        );
+        throw new Error(`Erro ao buscar PDVs para o produto: ${errData.erro || resp.statusText}`);
       }
       const data: PointOfSale[] = await resp.json();
       setPdvResults(data);
@@ -251,105 +230,15 @@ const App: React.FC = () => {
     }
   };
 
-  // --- UI helpers -----------------------------------------------------------
-
-  const renderProductCard = (product: Product) => {
-    return (
-      <div
-        key={product.id}
-        className="product-card"
-         style={{
-    width: "100%",            // <- força ocupar toda a largura disponível
-    border: "1px solid #eee",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-    position: "relative",
-        }}
-      >
-        {product.em_destaque && (
-          <span
-            className="highlight-tag"
-            style={{
-              position: "absolute",
-              top: 8,
-              left: 12,
-              background: "#F0D63D",
-              color: "#4B3F00",
-              fontSize: 12,
-              fontWeight: 700,
-              padding: "4px 10px",
-              borderRadius: 12,
-            }}
-          >
-            NOVO
-          </span>
-        )}
-
-        <div
-          className="product-content"
-          style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 100, width: 310, height: 90, boxSizing: "border-box" }}
-        >
-          <img
-            src={product.imagem_url}
-            alt={product.nome}
-            style={{ width: 90, height: 90, objectFit: "contain" }}
-          />
-
-          <div className="product-info" style={{ flex: "1 1 auto" }}>
-            <h4 style={{ margin: 0 }}>{product.nome}</h4>
-            <p className="volume" style={{ margin: "6px 0 0 0", color: "#666" }}>
-              {product.volume}
-            </p>
-          </div>
-
-          <div className="cta" style={{ marginLeft: "auto" }}>
-            <button
-              className="btn-primary"
-              onClick={() => handleSelectProductAndSearchPdvs(product)}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 20,
-                background: "#5B42D8",
-                color: "#fff",
-                border: 0,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Encontrar
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // --- RENDER ---------------------------------------------------------------
   return (
     <div className="App">
-      <main className="main-content-layout" style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20 }}>
+      <main className="main-content-layout">
         {/* Sidebar esquerda */}
-        <div className="sidebar-left" style={{ position: "relative" }}>
-          {/* Busca */}
-          <section className="search-section" style={{ marginBottom: 20 }}>
-            <label
-              htmlFor="product-search"
-              style={{
-                display: "block",
-                fontWeight: 700,
-                marginBottom: 8,
-                color: "#4B3F90",
-                fontSize: 16,
-              }}
-            >
-              Qual produto você quer encontrar?
-            </label>
-            <div
-              className="search-bar"
-              style={{ display: "flex", gap: 10, alignItems: "center" }}
-            >
+        <div className="sidebar-left">
+          <section className="search-section">
+            <label className="search-title">Qual produto você quer encontrar?</label>
+
+            <div className="search-bar">
               <input
                 type="text"
                 id="product-search"
@@ -357,157 +246,176 @@ const App: React.FC = () => {
                 value={productSearchTerm}
                 onChange={(e) => setProductSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
-                style={{
-                  flex: 1,
-                  height: 40,
-                  borderRadius: 8,
-                  border: "1px solid #ddd",
-                  padding: "0 12px",
-                }}
               />
-              <button
-                onClick={handleProductSearch}
-                style={{
-                  height: 40,
-                  padding: "0 16px",
-                  borderRadius: 8,
-                  border: 0,
-                  background: "#5B42D8",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Buscar
-              </button>
+              <button onClick={handleProductSearch}>Buscar</button>
             </div>
           </section>
 
-          {/* Resultados da busca */}
-          {productSearchTerm.trim() !== "" && (
-            <section className="product-search-results" style={{ marginTop: 10 }}>
-              <h3 style={{ margin: "0 0 12px 0", color: "#4B3F90" }}>
-                Resultados da Busca
-              </h3>
+          {/* Detalhe do produto selecionado */}
+          {showSelected && selectedProduct && (
+            <section className="selected-product-details">
+              <h3 className="product-title">{selectedProduct.nome}</h3>
+              <p className="product-description">
+                {selectedProduct.volume} - {selectedProduct.nome}
+              </p>
 
-              {loadingProductSearch ? (
-                <p>Buscando produtos...</p>
-              ) : error ? (
-                <p style={{ color: "red" }}>{error}</p>
-              ) : foundProducts.length === 0 ? (
-                <p>
-                  Nenhum produto encontrado para "{productSearchTerm}".
-                </p>
-              ) : (
-                foundProducts.map((p) => renderProductCard(p))
-              )}
+              <div className="product-card product-card--horizontal">
+                <div className="product-content">
+                  <img src={selectedProduct.imagem_url} alt={selectedProduct.nome} />
+                  <div className="product-info">
+                    <h4>{selectedProduct.nome}</h4>
+                    <p className="product-volume">{selectedProduct.volume}</p>
+                    <div className="product-cta">
+                      {selectedProduct.produto_url && (
+                        <a
+                          className="saba-mais-link"
+                          href={selectedProduct.produto_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          SAIBA MAIS &gt;
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </section>
           )}
 
-          {/* Produtos em destaque (até 5) */}
-          {productSearchTerm.trim() === "" && (
-            <section className="product-highlights" style={{ marginTop: 10 }}>
-              <h3 style={{ margin: "0 0 12px 0", color: "#4B3F90" }}>
+          {/* Resultados da busca */}
+          {showSearchResults && (
+            <section className="product-search-results">
+              <h3>Resultados da Busca</h3>
+              <div className="product-grid">
+                {loadingProductSearch ? (
+                  <p>Buscando produtos...</p>
+                ) : error ? (
+                  <p style={{ color: "red" }}>{error}</p>
+                ) : foundProducts.length === 0 ? (
+                  <p>Nenhum produto encontrado para "{productSearchTerm}".</p>
+                ) : (
+                  foundProducts.map((p) => (
+                    <div key={p.id} className="product-card product-card--horizontal">
+                      {p.em_destaque && <span className="highlight-tag">NOVO</span>}
+                      <div className="product-content">
+                        <img src={p.imagem_url} alt={p.nome} />
+                        <div className="product-info">
+                          <h4>{p.nome}</h4>
+                          <p className="product-volume">{p.volume}</p>
+                          <div className="product-cta">
+                            <button onClick={() => handleSelectProductAndSearchPdvs(p)}>
+                              Encontrar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Destaques */}
+          {showHighlights && (
+            <section className="product-highlights">
+              <h3 style={{ margin: "8px 0px 12px", color: "rgb(75, 62, 144)" }}>
                 Produtos em destaque
               </h3>
 
-              {loadingProducts ? (
-                <p>Carregando produtos...</p>
-              ) : error ? (
-                <p style={{ color: "red" }}>{error}</p>
-              ) : highlightProducts.length === 0 ? (
-                <p>Nenhum produto em destaque encontrado.</p>
-              ) : (
-                highlightProducts.slice(0, 5).map((p) => renderProductCard(p))
-              )}
+              <div id="highlight-products-list" className="product-grid">
+                {loadingProducts ? (
+                  <p>Carregando produtos...</p>
+                ) : error ? (
+                  <p style={{ color: "red" }}>{error}</p>
+                ) : highlightProducts.length === 0 ? (
+                  <p>Nenhum produto em destaque encontrado.</p>
+                ) : (
+                  highlightProducts.map((p) => (
+                    <div key={p.id} className="product-card product-card--horizontal">
+                      {p.em_destaque && <span className="highlight-tag">NOVO</span>}
+
+                      <div className="product-content">
+                        <img src={p.imagem_url} alt={p.nome} />
+                        <div className="product-info">
+                          <h4>{p.nome}</h4>
+                          <p className="product-volume">{p.volume}</p>
+                          <div className="product-cta">
+                            <button onClick={() => handleSelectProductAndSearchPdvs(p)}>
+                              Encontrar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </section>
           )}
         </div>
 
-        {/* Mapa + resultados */}
-        <div className="main-map-area" style={{ position: "relative" }}>
-          {/* botão flutuante "Quero revender" */}
-          <a
-            href="https://paviloche.com.br/seja-um-revendedor/"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              position: "absolute",
-              right: 16,
-              bottom: 16,
-              zIndex: 10,
-              background: "#5B42D8",
-              color: "#fff",
-              padding: "10px 14px",
-              borderRadius: 18,
-              fontWeight: 700,
-              textDecoration: "none",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-            }}
-          >
-            Quero revender
-          </a>
-
+        {/* Área do mapa + resultados */}
+        <div className="main-map-area">
           <section className="results-section">
-            <div className="map-area" style={{ height: 600 }}>
+            <div className="map-area" style={{ height: "100vh" }}>
               <MapComponent
                 center={mapCenter}
                 zoom={mapZoom}
                 points={pdvResults}
                 isBlurred={showLocationModal || !userLocationCoords}
               />
+
+              {/* FAB "Quero revender" */}
+              <a
+                href="https://paviloche.com.br/seja-um-revendedor/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="reseller-fab"
+                title="Quero revender"
+              >
+                Quero revender
+              </a>
             </div>
 
             {selectedProduct ? (
               <>
-                <h2 className="locals-count" style={{ marginTop: 12 }}>
-                  {pdvResults.length} locais mais próximos
-                </h2>
+                <h2 className="locals-count">{pdvResults.length} locais mais próximos</h2>
+                {selectedProduct.produto_url && (
+                  <a
+                    href={selectedProduct.produto_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="saba-mais-link"
+                  >
+                    SAIBA MAIS &gt;
+                  </a>
+                )}
+
                 <div id="pdv-results" className="pdv-list">
                   {loadingPdvs ? (
                     <p>Buscando pontos de venda...</p>
                   ) : error ? (
                     <p style={{ color: "red" }}>{error}</p>
                   ) : pdvResults.length === 0 ? (
-                    <p>
-                      Nenhum ponto de venda encontrado para este produto na sua
-                      localização.
-                    </p>
+                    <p>Nenhum ponto de venda encontrado para este produto na sua localização.</p>
                   ) : (
                     pdvResults.map((pdv) => (
-                      <div
-                        key={pdv.id}
-                        className="pdv-item"
-                        style={{
-                          padding: "10px 0",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        <h4 style={{ margin: "0 0 4px 0" }}>{pdv.nome}</h4>
-                        <p style={{ margin: 0, color: "#555" }}>
+                      <div key={pdv.id} className="pdv-item">
+                        <h4>{pdv.nome}</h4>
+                        <p>
                           Endereço: {pdv.endereco}, {pdv.cep}
                         </p>
-                        <p style={{ margin: 0, color: "#555" }}>
-                          Distância: {pdv.distancia_km} km
-                        </p>
+                        <p>Distância: {pdv.distancia_km} km</p>
                       </div>
                     ))
                   )}
                 </div>
               </>
             ) : (
-              <div
-                className="message-overlay-above-map"
-                style={{
-                  textAlign: "center",
-                  marginTop: 18,
-                  color: "#4B3F90",
-                  fontWeight: 700,
-                  fontSize: 28,
-                  lineHeight: 1.2,
-                }}
-              >
-                Escolha primeiro um produto para encontrar em lojas próximas
+              <div className="message-overlay-above-map">
+                <h2>Escolha primeiro um produto para encontrar em lojas próximas</h2>
               </div>
             )}
           </section>
@@ -516,114 +424,37 @@ const App: React.FC = () => {
 
       {/* Modal de localização */}
       {showLocationModal && (
-        <div
-          className="modal"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.35)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            className="modal-content"
-            style={{
-              width: 520,
-              maxWidth: "90vw",
-              background: "#fff",
-              borderRadius: 10,
-              padding: 20,
-              position: "relative",
-            }}
-          >
-            <span
-              className="close-button"
-              onClick={() => setShowLocationModal(false)}
-              style={{
-                position: "absolute",
-                right: 14,
-                top: 6,
-                fontSize: 26,
-                cursor: "pointer",
-              }}
-            >
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close-button" onClick={() => setShowLocationModal(false)}>
               &times;
             </span>
-            <h2 style={{ marginTop: 0 }}>
-              Onde você quer encontrar nossos produtos?
-            </h2>
-            <div
-              className="location-input-group"
-              style={{ display: "flex", gap: 10 }}
-            >
+            <h2>Onde você quer encontrar nossos produtos?</h2>
+
+            <div className="location-input-group">
               <input
                 type="text"
                 id="cep-input"
                 placeholder="Informe sua localização (CEP)"
                 value={cep}
                 onChange={(e) => setCep(e.target.value)}
-                style={{
-                  flex: 1,
-                  height: 40,
-                  borderRadius: 8,
-                  border: "1px solid #ddd",
-                  padding: "0 12px",
-                }}
               />
-              <button
-                onClick={handleSearchByCepClick}
-                style={{
-                  height: 40,
-                  padding: "0 16px",
-                  borderRadius: 8,
-                  border: 0,
-                  background: "#5B42D8",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Buscar
-              </button>
+              <button onClick={handleSearchByCepClick}>Buscar</button>
             </div>
-            <p className="or-divider" style={{ textAlign: "center" }}>
-              OU
-            </p>
-            <button
-              className="use-my-location-button"
-              onClick={handleUseMyLocation}
-              style={{
-                width: "100%",
-                height: 44,
-                borderRadius: 8,
-                border: 0,
-                background: "#5B42D8",
-                color: "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
+
+            <p className="or-divider">OU</p>
+
+            <button className="use-my-location-button" onClick={handleUseMyLocation}>
               Usar minha localização
             </button>
-            <p className="cep-hint" style={{ marginTop: 8 }}>
-              <small>
-                Após informar seu local, escolha um produto na lateral.
-              </small>
+
+            <p className="cep-hint">
+              <small>Após informar seu local, escolha um produto na lateral.</small>
             </p>
-            <div
-              className="powered-by"
-              style={{ textAlign: "center", color: "#777", marginTop: 10 }}
-            >
-              Desenvolvido por Paviloche
-            </div>
+            <div className="powered-by">Desenvolvido por Paviloche</div>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default App;
+}
