@@ -1,0 +1,214 @@
+/* =========================================================
+   RESET + VARS
+   ========================================================= */
+:root{
+  --brand:#5b42bd;
+  --brand-600:#4a38a3;
+  --muted:#8686a0;
+  --text:#22325f;
+  --card-bg:#fff;
+  --card-border:#e6ecf6;
+  --shadow:0 10px 30px #1c184814;
+  --radius:14px;
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+html,body{margin:0;padding:0;background:#f4f4f4;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+img{display:block;max-width:100%;height:auto}
+
+/* links & buttons */
+a{color:var(--brand);text-decoration:none}
+a:hover{filter:brightness(1.08)}
+button{cursor:pointer;border:0;border-radius:999px;background:var(--brand);color:#fff;padding:.55rem 1.1rem;font-weight:700;box-shadow:var(--shadow)}
+button:hover{background:var(--brand-600)}
+
+/* util */
+.container{max-width:1200px;margin:0 auto;padding:16px}
+
+/* =========================================================
+   LAYOUT PRINCIPAL
+   ========================================================= */
+.main-content-layout{
+  display:grid;
+  grid-template-columns: 320px 1fr;   /* coluna lateral + mapa */
+  gap:20px;
+  align-items:start;
+  padding:20px;
+}
+
+/* layout mobile: pilha */
+@media (max-width: 980px){
+  .main-content-layout{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   COLUNA ESQUERDA (SIDEBAR)
+   ========================================================= */
+.sidebar-left{
+  position:relative;
+  width:320px;
+  max-width:340px;
+  background:transparent; /* a moldura fica nos cards */
+}
+
+/* rolagem sem cortar no desktop, e automático no mobile */
+@media (min-width: 981px){
+  .sidebar-left{
+    max-height: calc(100vh - 40px);
+    overflow:auto;
+  }
+}
+
+/* barra de busca */
+.search-section{ margin-bottom:20px; }
+.search-bar{ display:flex; gap:8px; align-items:center; }
+.search-bar input{
+  width:100%;
+  padding:.7rem .9rem;
+  border:1px solid var(--card-border);
+  border-radius:999px;
+  background:#fff;
+}
+
+/* título blocos */
+.sidebar-left h3{ 
+  margin:8px 0 12px; 
+  color:var(--text);
+}
+
+/* lista de destaques (o “5 itens” é controlado no TS/JS; CSS não limita) */
+.product-highlights{}
+
+/* =========================================================
+   CARD DE PRODUTO (LATERAL)
+   ========================================================= */
+.product-card{
+  position:relative;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:12px 14px;
+}
+
+.product-card + .product-card{ margin-top:16px; }
+
+/* selo NOVO */
+.product-card .highlight-tag{
+  position:absolute;
+  top:8px; left:8px;
+  background:#ffd400; color:#4a3b00;
+  font-size:.75rem; font-weight:800;
+  border-radius:999px; padding:.25rem .5rem;
+  box-shadow:var(--shadow);
+}
+
+/* grade do conteúdo */
+.product-card .product-content{
+  display:grid;
+  grid-template-columns: 90px 1fr;                 /* 90px img + conteúdo */
+  grid-template-rows:auto auto auto;
+  grid-template-areas:
+    "img title"
+    "img volume"
+    "img actions";
+  column-gap:12px;
+  align-items:center;
+  min-height:130px;                                 /* solicitado */
+}
+
+/* imagem */
+.product-card .product-image,
+.product-card img{
+  grid-area: img;
+  width:90px !important; height:auto; object-fit:contain;
+}
+
+/* textos */
+.product-card .product-title{
+  grid-area:title;
+  margin:0 0 4px 0;
+  line-height:1.1;
+  font-weight:800;
+  text-align:left;
+}
+.product-card .product-volume{
+  grid-area:volume;
+  margin:0 0 8px 0;
+  color:var(--muted);
+  text-align:left;
+}
+
+/* ação */
+.product-card .product-actions{
+  grid-area:actions;
+  justify-self:end;                                  /* botão à direita */
+}
+
+/* =========================================================
+   ÁREA DO MAPA
+   ========================================================= */
+.main-map-area .results-section{ min-height:0 !important; }
+.main-map-area .map-area{
+  position:relative;
+  height: clamp(520px, 70vh, 680px);                 /* ajuste livre */
+  margin:0; padding:0;
+  background:#fff;
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+#map,
+.map-container,
+.mapboxgl-map,
+.mapboxgl-canvas{
+  width:100% !important;
+  height:100% !important;
+  display:block;
+}
+
+/* botão “Quero revender” fixo no canto (opcional) */
+.revender-btn{
+  position:absolute;
+  right:16px; bottom:16px;
+  z-index:10;
+  padding:.55rem 1rem;
+}
+
+/* crétidos do mapa visíveis mas discretos */
+.mapboxgl-ctrl-logo{ opacity:.85; }
+.mapboxgl-ctrl-attrib{ opacity:.85; }
+
+/* =========================================================
+   MODAL DE LOCALIZAÇÃO (se usar)
+   ========================================================= */
+.modal{
+  position:fixed; inset:0;
+  background:#00000066;
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999;
+}
+.modal-content{
+  width:min(520px, 92vw);
+  background:#fff;
+  border-radius:16px;
+  padding:24px;
+  box-shadow:var(--shadow);
+  position:relative;
+}
+.close-button{
+  position:absolute; right:12px; top:8px;
+  font-size:24px; line-height:1; cursor:pointer; color:#999;
+}
+
+/* =========================================================
+   RESPONSIVO FINO
+   ========================================================= */
+@media (max-width:980px){
+  .sidebar-left{ width:100%; max-width:100%; }
+  .product-card .product-actions{ justify-self:start; } /* opcional no mobile */
+}
