@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import MapComponent from "./MapComponent";
 import { API_BASE } from "./config";
+import './styles.css';
+
 
 // Tipos
 type Product = {
