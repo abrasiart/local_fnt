@@ -162,13 +162,17 @@ button:hover{background:var(--brand-600)}
   box-shadow:var(--shadow);
 }
 
-#map,
-.map-container,
-.mapboxgl-map,
-.mapboxgl-canvas{
-  width:100% !important;
-  height:100% !important;
-  display:block;
+/* container com altura controlada */
+.main-map-area .map-area{
+  position: relative;
+  height: clamp(520px, 70vh, 680px);
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;          /* evita “vazar” canto arredondado */
 }
 
 /* botão “Quero revender” fixo no canto (opcional) */
