@@ -2,188 +2,182 @@ import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiYWJyYXNpbGFydCIsImEiOiJjbWQzaWd1MWYwNTZ2Mm1xNGpmaDRidGdkIn0.0fOq0GcKZhlP2ZZrjPR08w'; // <<<< ATENÇÃO: COLOQUE SEU TOKEN REAL AQUI!
+mapboxgl.accessToken =
+  'pk.eyJ1IjoiYWJyYXNpbGFydCIsImEiOiJjbWQzaWd1MWYwNTZ2Mm1xNGpmaDRidGdkIn0.0fOq0GcKZhlP2ZZrjPR08w';
 
 interface PDVData {
-    id: string;
-    nome: string;
-    latitude: number;
-    longitude: number;
-    endereco: string;
-    distancia_km: number;
+  id: string;
+  nome: string;
+  latitude: number;
+  longitude: number;
+  endereco: string;
+  distancia_km: number;
 }
 
 interface MapComponentProps {
-    center: [number, number];
-    zoom: number;
-    points: PDVData[];
-    isBlurred?: boolean;
+  center: [number, number];
+  zoom: number;
+  points: PDVData[];
+  isBlurred?: boolean;
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ center, zoom, points, isBlurred }) => {
-    const mapContainer = useRef<HTMLDivElement | null>(null);
-    const map = useRef<mapboxgl.Map | null>(null);
+const MapComponent: React.FC<MapComponentProps> = ({
+  center,
+  zoom,
+  points,
+  isBlurred,
+}) => {
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const resizeObsRef = useRef<ResizeObserver | null>(null);
 
-    const [lng, setLng] = useState<number>(center[0]);
-    const [lat, setLat] = useState<number>(center[1]);
-    const [mapZoom, setMapZoom] = useState<number>(zoom);
+  // só para debug/DevTools
+  const [lng, setLng] = useState<number>(center[0]);
+  const [lat, setLat] = useState<number>(center[1]);
+  const [mapZoom, setMapZoom] = useState<number>(zoom);
 
-    const updateMarkers = (currentPoints: PDVData[]) => {
-        if (!map.current || !map.current.isStyleLoaded()) {
-            console.log('MapComponent: Mapa ou estilo não carregado ainda para adicionar marcadores. Esperando...');
-            if (map.current) {
-                map.current.once('style.load', () => updateMarkers(currentPoints));
-            }
-            return;
-        }
-        console.log('MapComponent: Atualizando marcadores...');
+  /** Remove todos os marcadores atuais */
+  const clearMarkers = () => {
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+  };
 
-        const existingMarkers = document.getElementsByClassName('mapboxgl-marker');
-        while (existingMarkers.length > 0) {
-            existingMarkers[0].remove();
-        }
+  /** Adiciona marcadores com base em `points` */
+  const updateMarkers = (currentPoints: PDVData[]) => {
+    if (!map.current) return;
 
-        currentPoints.forEach(point => {
-            const popupContent = `
-                <h3>${point.nome}</h3>
-                <p>${point.endereco}</p>
-                <p>Distância: ${point.distancia_km} km</p>
-            `;
+    // Se o estilo ainda não terminou de carregar, espera um ciclo
+    if (!map.current.isStyleLoaded()) {
+      map.current.once('style.load', () => updateMarkers(currentPoints));
+      return;
+    }
 
-            new mapboxgl.Marker()
-                .setLngLat([point.longitude, point.latitude])
-                .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent))
-                .addTo(map.current!);
-        });
-        console.log(`MapComponent: ${currentPoints.length} marcadores adicionados.`);
+    clearMarkers();
+
+    currentPoints.forEach((p) => {
+      const popupHtml = `
+        <h3 style="margin:0 0 4px 0">${p.nome}</h3>
+        <p style="margin:0">${p.endereco}</p>
+        <p style="margin:4px 0 0 0">Distância: ${p.distancia_km} km</p>
+      `;
+
+      const marker = new mapboxgl.Marker()
+        .setLngLat([p.longitude, p.latitude])
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHtml))
+        .addTo(map.current!);
+
+      markersRef.current.push(marker);
+    });
+  };
+
+  /** Inicializa o mapa quando o container tem dimensões válidas */
+  const initMap = () => {
+    if (map.current || !mapContainer.current) return;
+
+    // Evita criar caso o container ainda não tenha altura/largura
+    const { clientWidth, clientHeight } = mapContainer.current;
+    if (clientWidth === 0 || clientHeight === 0) {
+      // tenta no próximo frame
+      requestAnimationFrame(initMap);
+      return;
+    }
+
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center,
+      zoom,
+    });
+
+    map.current.on('load', () => {
+      // Controles
+      map.current?.addControl(new mapboxgl.NavigationControl(), 'top-left');
+
+      // Ajuste fino: espere um frame para o layout estabilizar
+      requestAnimationFrame(() => {
+        map.current?.resize();
+        updateMarkers(points);
+      });
+    });
+
+    map.current.on('move', () => {
+      if (!map.current) return;
+      setLng(parseFloat(map.current.getCenter().lng.toFixed(4)));
+      setLat(parseFloat(map.current.getCenter().lat.toFixed(4)));
+      setMapZoom(parseFloat(map.current.getZoom().toFixed(2)));
+    });
+
+    // Redimensionamentos
+    const onWindowResize = () => map.current?.resize();
+    window.addEventListener('resize', onWindowResize);
+
+    // Observa o container para reagir a mudanças de tamanho
+    resizeObsRef.current = new ResizeObserver(() => {
+      map.current?.resize();
+    });
+    resizeObsRef.current.observe(mapContainer.current);
+
+    // Cleanup local do init
+    const cleanupInit = () => {
+      window.removeEventListener('resize', onWindowResize);
+      if (resizeObsRef.current && mapContainer.current) {
+        try {
+          resizeObsRef.current.unobserve(mapContainer.current);
+        } catch {}
+      }
+      resizeObsRef.current = null;
     };
 
-    useEffect(() => {
-        console.log('MapComponent: useEffect de inicialização do mapa executado.');
-        if (map.current) {
-            console.log('MapComponent: Mapa já inicializado, pulando inicialização.');
-            return;
-        }
+    // Armazena cleanup dentro do ref do mapa para ser acionado no unmount
+    // (técnica rápida; também poderíamos usar um outro ref ou state)
+    (map.current as any).__cleanupInit = cleanupInit;
+  };
 
-        if (!mapContainer.current) {
-            console.error('MapComponent: mapContainer.current é null. O elemento DOM do mapa não está disponível. Re-tentando...');
-            // Usar requestAnimationFrame para garantir que o contêiner esteja no DOM
-            requestAnimationFrame(() => {
-                console.warn('MapComponent: Re-tentando inicialização via requestAnimationFrame.');
-                // Forçar um re-render dummy (ex: mudando um estado local) para re-executar este useEffect
-                // Esta lógica não é ideal, a melhor é garantir que o pai tenha dimensões
-            });
-            return;
-        }
+  // Inicializa o mapa uma única vez
+  useEffect(() => {
+    initMap();
 
-        const containerWidth = mapContainer.current.clientWidth;
-        const containerHeight = mapContainer.current.clientHeight;
+    return () => {
+      if (map.current) {
+        clearMarkers();
+        const cleanupInit = (map.current as any).__cleanupInit as
+          | (() => void)
+          | undefined;
+        if (cleanupInit) cleanupInit();
+        map.current.remove();
+        map.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-        console.log(`MapComponent: Dimensões computadas do container: ${containerWidth}px x ${containerHeight}px`);
+  // Atualiza centro/zoom
+  useEffect(() => {
+    if (map.current) {
+      map.current.flyTo({ center, zoom });
+    }
+  }, [center, zoom]);
 
-        if (containerWidth === 0 || containerHeight === 0) {
-            console.warn('MapComponent: Contêiner do mapa tem dimensão zero. Aguardando dimensão...');
-            // Aumentar o atraso para dar mais tempo ao DOM
-            setTimeout(() => {
-                if (mapContainer.current) {
-                   const finalWidth = mapContainer.current.clientWidth;
-                   const finalHeight = mapContainer.current.clientHeight;
-                   if (finalWidth > 0 && finalHeight > 0) {
-                     // Se tiver dimensão, tenta inicializar
-                     console.warn('MapComponent: Altura encontrada no setTimeout. Inicializando...');
-                     // Recriar o mapa aqui. Esta é a forma mais robusta de contornar.
-                     map.current = new mapboxgl.Map({
-                        container: mapContainer.current,
-                        style: 'mapbox://styles/mapbox/streets-v11',
-                        center: center,
-                        zoom: zoom,
-                     });
-                     console.log('MapComponent: Instância criada no setTimeout!');
-                     if (map.current) {
-                       map.current.on('load', () => updateMarkers(points));
-                       map.current.resize();
-                     }
-                   }
-                }
-            }, 250); // Atraso de 250ms
-            return;
-        }
+  // Atualiza marcadores quando os pontos mudam
+  useEffect(() => {
+    if (map.current) updateMarkers(points);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [points]);
 
-        try {
-            console.log('MapComponent: Tentando inicializar novo mapboxgl.Map...');
-            map.current = new mapboxgl.Map({
-                container: mapContainer.current,
-                style: 'mapbox://styles/mapbox/streets-v11',
-                center: center,
-                zoom: zoom,
-            });
-            console.log('MapComponent: mapboxgl.Map instância CRIADA:', map.current);
+  // Quando o efeito de blur sai, força um resize
+  useEffect(() => {
+    if (map.current && !isBlurred) {
+      requestAnimationFrame(() => map.current?.resize());
+    }
+  }, [isBlurred]);
 
-            map.current.on('load', () => {
-                console.log('MapComponent: Evento "load" do mapa disparado. Mapa e estilo carregados.');
-                if (map.current) {
-                    map.current.addControl(new mapboxgl.NavigationControl(), 'top-left');
-                    updateMarkers(points);
-                    map.current.resize();
-                    console.log('MapComponent: map.resize() chamado após load.');
-
-                    setTimeout(() => {
-                        if (map.current) {
-                            map.current.resize();
-                            console.log('MapComponent: map.resize() chamado com atraso (fallback para renderização final).');
-                        }
-                    }, 250);
-                }
-            });
-
-            map.current.on('move', () => {
-                if (map.current) {
-                    setLng(parseFloat(map.current.getCenter().lng.toFixed(4)));
-                    setLat(parseFloat(map.current.getCenter().lat.toFixed(4)));
-                    setMapZoom(parseFloat(map.current.getZoom().toFixed(2)));
-                }
-            });
-
-        } catch (e: any) {
-            console.error('MapComponent: ERRO FATAL ao inicializar Mapbox:', e);
-            console.error('MapComponent: Mensagem:', e.message);
-            console.error('MapComponent: Stack:', e.stack);
-            console.error('Verifique seu token de acesso Mapbox (https://account.mapbox.com/), seu CSS (.map-container precisa de height/width) e se não há restrições de URL no token.');
-        }
-
-        return () => {
-            console.log('MapComponent: Função de cleanup, removendo mapa.');
-            if (map.current) {
-                map.current.remove();
-                map.current = null;
-            }
-        };
-    }, []);
-
-    useEffect(() => {
-        console.log('MapComponent: useEffect de atualização de centro/zoom. Center:', center, 'Zoom:', zoom);
-        if (map.current) {
-            map.current.flyTo({ center: center, zoom: zoom });
-        }
-    }, [center, zoom]);
-
-    useEffect(() => {
-        console.log('MapComponent: useEffect de atualização de pontos. Pontos:', points.length);
-        updateMarkers(points);
-    }, [points]);
-
-    useEffect(() => {
-        if (map.current && !isBlurred) {
-            map.current.resize();
-            console.log('MapComponent: map.resize() chamado após desborrar.');
-        }
-    }, [isBlurred, map.current]);
-
-    return (
-        <div>
-            <div ref={mapContainer} className={`map-container ${isBlurred ? 'blurred' : ''}`} />
-        </div>
-    );
+  return (
+    <div className={isBlurred ? 'blurred' : undefined}>
+      {/* O CSS do projeto deve garantir que .map-container tenha width/height do layout */}
+      <div ref={mapContainer} className="map-container" />
+    </div>
+  );
 };
 
 export default MapComponent;
