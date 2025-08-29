@@ -175,6 +175,27 @@ button:hover{background:var(--brand-600)}
   overflow: hidden;          /* evita “vazar” canto arredondado */
 }
 
+/* mapa ocupa o container */
+#map,
+.map-container,
+.mapboxgl-map{
+  position: absolute;
+  inset: 0;                  /* top/right/bottom/left = 0 */
+  width: 100%;
+  height: 100%;
+}
+
+/* ⚠️ NÃO force width/height do canvas aqui!
+   deixe o Mapbox definir esses valores para evitar distorção */
+.mapboxgl-canvas{
+  position: absolute;
+  inset: 0;
+  /* sem width/height !important */
+  /* garante que não haja nenhuma escala estranha aplicada */
+  transform: none !important;
+}
+
+
 /* botão “Quero revender” fixo no canto (opcional) */
 .revender-btn{
   position:absolute;
