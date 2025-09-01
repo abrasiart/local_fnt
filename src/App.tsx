@@ -357,26 +357,24 @@ export default function App() {
 
         {/* Área do mapa + resultados */}
         <div className="main-map-area">
-          <section className="results-section">
-            <div className="map-area" style={{ height: "100vh" }}>
-              <MapComponent
-                center={mapCenter}
-                zoom={mapZoom}
-                points={pdvResults}
-                isBlurred={showLocationModal || !userLocationCoords}
-              />
+  <section className="results-section">
+    <div className="map-area">
+      <MapComponent
+        center={mapCenter}
+        zoom={mapZoom}
+        points={pdvResults}
+        isBlurred={showLocationModal || !userLocationCoords}
+      />
 
-              {/* FAB "Quero revender" */}
-              <a
-                href="https://paviloche.com.br/seja-um-revendedor/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="reseller-fab"
-                title="Quero revender"
-              >
-                Quero revender
-              </a>
-            </div>
+      <a
+        className="map-cta"
+        href="https://paviloche.com.br/seja-um-revendedor/"
+        target="_blank"
+        rel="noopener"
+      >
+        Quero revender
+      </a>
+    </div>
 
             {selectedProduct ? (
               <>
