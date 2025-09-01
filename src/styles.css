@@ -233,87 +233,42 @@ button:hover{background:var(--brand-600)}
 /* =========================================================
    RESPONSIVO FINO
    ========================================================= */
-@media (max-width:980px){
-  .sidebar-left{ width:100%; max-width:100%; }
-  .product-card .product-actions{ justify-self:start; } /* opcional no mobile */
-
-/* === MAPA: altura e layout estáveis === */
-.main-map-area {
-  min-height: 560px;
-}
-
-.map-area {
-  height: 100%;
-}
-
-/* Contêiner do mapa deve ter altura explícita */
-.map-container {
-  width: 100%;
-  min-height: 560px;                    /* altura-base desktop */
-  height: clamp(520px, 70vh, 820px);    /* responsivo, evita esticar */
-  position: relative;
-  z-index: 1;                           /* abaixo do modal */
-  /* Se algum CSS antigo tiver definido aspect-ratio, anula: */
-  aspect-ratio: auto !important;
-}
-
-/* O Mapbox precisa “colar” 100% no contêiner */
-.mapboxgl-map,
-.mapboxgl-canvas {
-  width: 100% !important;
-  height: 100% !important;
-  display: block; /* evita espaços fantasmas */
-}
-
-/* === MODAL: acima do mapa, centralizado === */
-.modal {
-  position: fixed;
-  inset: 0;                       /* top/right/bottom/left: 0 */
-  background: rgba(0,0,0,.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;                  /* acima do mapa e de tudo */
-}
-
-.modal .modal-content {
-  background: #fff;
-  width: min(92vw, 640px);
-  max-width: 640px;
-  border-radius: 14px;
-  padding: 24px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.25);
-  position: relative;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  cursor: pointer;
-}
-
-/* === Garanta que o app tenha altura "natural" === */
-html, body, #root {
-  min-height: 100%;
-  height: auto;
-}
-
-/* === Mobile: pilha em coluna e altura do mapa segura === */
-@media (max-width: 900px) {
+@media (max-width: 980px) {
   .main-content-layout {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
+
   .sidebar-left {
+    width: 100%;
+    max-width: 100%;
     order: 2;
   }
+
   .main-map-area {
     order: 1;
     min-height: 420px;
   }
+
   .map-container {
     min-height: 420px;
-    height: 60vh; /* mais compacto no mobile */
+    height: 60vh; /* mapa não estica no mobile */
   }
-}
+
+  .product-card {
+    grid-template-columns: 90px 1fr auto;
+    min-height: 130px;
+  }
+
+  .product-card img {
+    width: 90px;
+    height: 90px;
+  }
+
+  /* Se quiser o botão à esquerda no mobile, mantenha start; 
+     se quiser à direita, troque para end. */
+  .product-card .product-actions {
+    justify-self: end;
+  }
+} /* <-- NÃO REMOVA ESTA CHAVE DE FECHAMENTO */
 
