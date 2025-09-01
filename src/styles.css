@@ -386,3 +386,53 @@ button:hover{background:var(--brand-600)}
   }
 } /* <-- NÃO REMOVA ESTA CHAVE DE FECHAMENTO */
 
+/* ===================== MAPA / CTA ===================== */
+
+/* a coluna do mapa */
+.main-map-area{
+  position: relative;                 /* ancora filhos absolutos (CTA) */
+  min-height: 640px;                  /* fallback desktop */
+}
+
+/* wrapper do mapa */
+.map-area{
+  position: relative;                 /* pai do .map-container e do CTA */
+  height: 640px;                      /* altura visível do mapa */
+}
+
+/* o canvas do mapbox ocupa 100% do wrapper */
+.map-container{
+  position: absolute;
+  inset: 0;                           /* top/right/bottom/left:0 */
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+}
+
+/* CTA sobre o mapa */
+.map-cta{
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #6c43e0;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+
+/* responsivo */
+@media (max-width: 980px){
+  .main-map-area{ min-height: 420px; }
+  .map-area{ height: 420px; }
+}
+
+/* ajuste opcional: quando a janela for alta, deixe o mapa crescer */
+@media (min-height: 900px){
+  .map-area{ height: calc(100vh - 220px); }
+}
+
+
