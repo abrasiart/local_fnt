@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import MapComponent from "./MapComponent";
 import { API_BASE } from "./config";
 
-// Tipos
 type Product = {
   id: string;
   nome: string;
@@ -25,43 +24,35 @@ type PointOfSale = {
 export default function App() {
   const BACKEND_URL = API_BASE;
 
-  // Localização / Modal
   const [showLocationModal, setShowLocationModal] = useState<boolean>(true);
-  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null); // [lon, lat]
+  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null);
   const [userLocationAddress, setUserLocationAddress] = useState<string | null>(null);
   const [cep, setCep] = useState<string>("");
 
-  // Produtos
   const [highlightProducts, setHighlightProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
 
-  // Busca de produtos
   const [productSearchTerm, setProductSearchTerm] = useState<string>("");
   const [foundProducts, setFoundProducts] = useState<Product[]>([]);
   const [loadingProductSearch, setLoadingProductSearch] = useState<boolean>(false);
 
-  // Produto selecionado
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // PDVs
   const [pdvResults, setPdvResults] = useState<PointOfSale[]>([]);
   const [loadingPdvs, setLoadingPdvs] = useState<boolean>(false);
 
-  // Erros
   const [error, setError] = useState<string | null>(null);
 
-  // Mapa
   const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]);
   const [mapZoom, setMapZoom] = useState<number>(11);
 
-  // Destaques ao montar
   useEffect(() => {
     (async () => {
       try {
         const resp = await fetch(`${BACKEND_URL}/produtos/destaque`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data: Product[] = await resp.json();
-        setHighlightProducts(data); // sem slice — backend já retorna todos
+        setHighlightProducts(data);
       } catch (e: any) {
         console.error("Erro ao buscar destaques:", e);
         setError("Não foi possível carregar os produtos em destaque.");
@@ -71,7 +62,6 @@ export default function App() {
     })();
   }, [BACKEND_URL]);
 
-  // Buscar PDVs por CEP ou Lat/Lon
   const searchPdvsByLocation = async (params: { cep?: string; lat?: number; lon?: number }) => {
     setLoadingPdvs(true);
     setError(null);
@@ -90,7 +80,6 @@ export default function App() {
           setShowLocationModal(true);
           return;
         }
-        // backend já geocodifica e retorna PDVs próximos
         const resp = await fetch(`${BACKEND_URL}/pdvs/proximos?cep=${cleanCep}`);
         const data = await resp.json();
         if (!resp.ok || !Array.isArray(data) || data.length === 0) {
@@ -110,7 +99,6 @@ export default function App() {
           return;
         }
       } else if (params.lat && params.lon) {
-        // usar localização atual
         coordsFromApi = [params.lon, params.lat];
         try {
           const KEY = "0b4186d795a547769c0272db912585c3";
@@ -232,14 +220,16 @@ export default function App() {
 
       <div className="product-content">
         <img className="product-image" src={p.imagem_url} alt={p.nome} />
-
         <div className="product-info">
           <h4 className="product-title">{p.nome}</h4>
           {p.volume && <p className="product-volume">{p.volume}</p>}
         </div>
-
         <div className="product-actions">
-          <button className="btn-primary" onClick={() => handleSelectProductAndSearchPdvs(p)}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => handleSelectProductAndSearchPdvs(p)}
+          >
             Encontrar
           </button>
           {p.produto_url ? (
@@ -264,7 +254,6 @@ export default function App() {
   return (
     <div className="App">
       <main className="main-content-layout">
-        {/* Sidebar esquerda */}
         <div className="sidebar-left">
           <section className="search-section">
             <label className="search-label">Qual produto você quer encontrar?</label>
@@ -276,11 +265,10 @@ export default function App() {
                 onChange={(e) => setProductSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
               />
-              <button onClick={handleProductSearch}>Buscar</button>
+              <button type="button" onClick={handleProductSearch}>Buscar</button>
             </div>
           </section>
 
-          {/* Destaques OU Resultados */}
           {productSearchTerm.trim() !== "" ? (
             <section className="product-highlights">
               <h3>Resultados da busca</h3>
@@ -310,7 +298,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Mapa + resultados */}
         <div className="main-map-area">
           <section className="results-section">
             <div className="map-area">
@@ -320,7 +307,6 @@ export default function App() {
                 points={pdvResults}
                 isBlurred={showLocationModal || !userLocationCoords}
               />
-
               <a
                 className="map-cta"
                 href="https://paviloche.com.br/seja-um-revendedor/"
@@ -345,9 +331,7 @@ export default function App() {
                     pdvResults.map((pdv) => (
                       <div key={pdv.id} className="pdv-item">
                         <h4>{pdv.nome}</h4>
-                        <p>
-                          Endereço: {pdv.endereco}, {pdv.cep}
-                        </p>
+                        <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
                         <p>Distância: {pdv.distancia_km} km</p>
                       </div>
                     ))
@@ -363,7 +347,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* Modal de localização */}
       {showLocationModal && (
         <div className="modal">
           <div className="modal-content">
@@ -378,10 +361,10 @@ export default function App() {
                 value={cep}
                 onChange={(e) => setCep(e.target.value)}
               />
-              <button onClick={handleSearchByCepClick}>Buscar</button>
+              <button type="button" onClick={handleSearchByCepClick}>Buscar</button>
             </div>
             <p className="or-divider">OU</p>
-            <button className="use-my-location-button" onClick={handleUseMyLocation}>
+            <button type="button" className="use-my-location-button" onClick={handleUseMyLocation}>
               Usar minha localização
             </button>
             <p className="cep-hint">
