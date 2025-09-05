@@ -1,412 +1,189 @@
 /* =========================================================
-   RESET + VARS
+   VARIÁVEIS & BASE
    ========================================================= */
 :root{
-  --brand:#5b42bd;
-  --brand-600:#4a38a3;
-  --muted:#8686a0;
-  --text:#22325f;
-  --card-bg:#fff;
-  --card-border:#e6ecf6;
-  --shadow:0 10px 30px #1c184814;
-  --radius:14px;
+  --brand: #5b42bd;
+  --brand-600: #4a38a8;
+  --text: #223;
+  --muted: #666a7e;
+  --card-border: #e6ecf6;
+  --card-bg: #fff;
+  --shadow: 10px 30px 40px #1c148b14;
+  --cta: #6c43e0;
 }
 
-*{box-sizing:border-box}
-html,body,#root{height:100%}
-html,body{margin:0;padding:0;background:#f4f4f4;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-img{display:block;max-width:100%;height:auto}
-
-/* links & buttons */
-a{color:var(--brand);text-decoration:none}
-a:hover{filter:brightness(1.08)}
-button{cursor:pointer;border:0;border-radius:999px;background:var(--brand);color:#fff;padding:.55rem 1.1rem;font-weight:700;box-shadow:var(--shadow)}
-button:hover{background:var(--brand-600)}
-
-/* util */
-.container{max-width:1200px;margin:0 auto;padding:16px}
+*{ box-sizing: border-box; }
+html, body, #root{ height: 100%; }
+body{
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  color: var(--text);
+  background: #f4f4f4;
+}
 
 /* =========================================================
    LAYOUT PRINCIPAL
    ========================================================= */
 .main-content-layout{
-  display:grid;
-  grid-template-columns: 320px 1fr;   /* coluna lateral + mapa */
-  gap:20px;
-  align-items:start;
-  padding:20px;
-}
-
-/* layout mobile: pilha */
-@media (max-width: 980px){
-  .main-content-layout{
-    grid-template-columns: 1fr;
-  }
+  max-width: 1220px;
+  margin: 20px auto;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
 }
 
 /* =========================================================
-   COLUNA ESQUERDA (SIDEBAR)
+   SIDEBAR ESQUERDA
    ========================================================= */
 .sidebar-left{
-  position:relative;
-  width:320px;
-  max-width:340px;
-  background:transparent; /* a moldura fica nos cards */
-}
-
-/* rolagem sem cortar no desktop, e automático no mobile */
-@media (min-width: 981px){
-  .sidebar-left{
-    max-height: calc(100vh - 40px);
-    overflow:auto;
-  }
-}
-
-/* barra de busca */
-.search-section{ margin-bottom:20px; }
-.search-bar{ display:flex; gap:8px; align-items:center; }
-.search-bar input{
-  width:100%;
-  padding:.7rem .9rem;
-  border:1px solid var(--card-border);
-  border-radius:999px;
-  background:#fff;
-}
-
-/* título blocos */
-.sidebar-left h3{ 
-  margin:8px 0 12px; 
-  color:var(--text);
-}
-
-/* lista de destaques (o “5 itens” é controlado no TS/JS; CSS não limita) */
-.product-highlights{}
-
-/* =========================================================
-   CARD DE PRODUTO (LATERAL)
-   ========================================================= */
-.product-card{
-  position:relative;
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:12px 14px;
-}
-
-.product-card + .product-card{ margin-top:16px; }
-
-/* selo NOVO */
-.product-card .highlight-tag{
-  position:absolute;
-  top:8px; left:8px;
-  background:#ffd400; color:#4a3b00;
-  font-size:.75rem; font-weight:800;
-  border-radius:999px; padding:.25rem .5rem;
-  box-shadow:var(--shadow);
-}
-
-/* grade do conteúdo */
-.product-card .product-content{
-  display:grid;
-  grid-template-columns: 90px 1fr;                 /* 90px img + conteúdo */
-  grid-template-rows:auto auto auto;
-  grid-template-areas:
-    "img title"
-    "img volume"
-    "img actions";
-  column-gap:12px;
-  align-items:center;
-  min-height:130px;                                 /* solicitado */
-}
-
-/* imagem */
-.product-card .product-image,
-.product-card img{
-  grid-area: img;
-  width:90px !important; height:auto; object-fit:contain;
-}
-
-/* textos */
-.product-card .product-title{
-  grid-area:title;
-  margin:0 0 4px 0;
-  line-height:1.1;
-  font-weight:800;
-  text-align:left;
-}
-.product-card .product-volume{
-  grid-area:volume;
-  margin:0 0 8px 0;
-  color:var(--muted);
-  text-align:left;
-}
-
-/* ação */
-.product-card .product-actions{
-  grid-area:actions;
-  justify-self:end;                                  /* botão à direita */
-}
-
-/* =========================================================
-   ÁREA DO MAPA
-   ========================================================= */
-.main-map-area .results-section{ min-height:0 !important; }
-.main-map-area .map-area{
-  position:relative;
-  height: clamp(520px, 70vh, 680px);                 /* ajuste livre */
-  margin:0; padding:0;
-  background:#fff;
-  border:1px solid var(--card-border);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-}
-
-/* container com altura controlada */
-.main-map-area .map-area{
-  position: relative;
-  height: clamp(520px, 70vh, 680px);
-  margin: 0;
-  padding: 0;
-  background: #fff;
+  background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius);
+  border-radius: 14px;
+  padding: 16px;
   box-shadow: var(--shadow);
-  overflow: hidden;          /* evita “vazar” canto arredondado */
 }
 
-/* mapa ocupa o container */
-#map,
-.map-container,
-.mapboxgl-map{
-  position: absolute;
-  inset: 0;                  /* top/right/bottom/left = 0 */
+.search-section .search-label{
+  display:block;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.search-bar{
+  display: grid;
+  grid-template-columns: 1fr 98px;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-bar input{
   width: 100%;
-  height: 100%;
+  height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #d3d7e0;
+  border-radius: 8px;
+  outline: none;
 }
 
-/* ⚠️ NÃO force width/height do canvas aqui!
-   deixe o Mapbox definir esses valores para evitar distorção */
-.mapboxgl-canvas{
-  position: absolute;
-  inset: 0;
-  /* sem width/height !important */
-  /* garante que não haja nenhuma escala estranha aplicada */
-  transform: none !important;
+.search-bar button{
+  height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
 }
 
+/* =========================================================
+   CARDS DE PRODUTO
+   ========================================================= */
+.product-highlights h3{
+  margin: 16px 0 12px;
+  color: var(--text);
+}
 
-/* botão “Quero revender” fixo no canto (opcional) */
-.revender-btn{
+.product-card{
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.highlight-tag{
   position:absolute;
-  right:16px; bottom:16px;
-  z-index:10;
-  padding:.55rem 1rem;
+  top: 8px;
+  left: 12px;
+  background: #ffd54f;
+  color: #5a4b00;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
-/* crétidos do mapa visíveis mas discretos */
-.mapboxgl-ctrl-logo{ opacity:.85; }
-.mapboxgl-ctrl-attrib{ opacity:.85; }
+.product-content{
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.product-image{
+  display:block;
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+}
+
+.product-info .product-title{
+  margin: 0 0 6px;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.product-info .product-volume{
+  margin: 0;
+  font-size: 13px;
+  color: #5b5b65;
+}
+
+.product-actions{
+  display: grid;
+  gap: 8px;
+  justify-items: end; /* empurra botão à direita */
+}
+
+.btn-primary{
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.know-more{
+  display: inline-block;
+  font-size: 12px;
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 700;
+}
 
 /* =========================================================
-   MODAL DE LOCALIZAÇÃO (se usar)
+   ÁREA DO MAPA E RESULTADOS
    ========================================================= */
-
-.modal {
-    display: flex;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 30px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 10px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-}
-
-.modal-content h2 {
-    color: #5b428d;
-    margin-top: 0;
-    font-size: 1.8em;
-}
-
-.close-button {
-    color: #aaa;
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: black;
-}
-
-.location-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.location-input-group input {
-    padding: 15px;
-    border: 2px solid #5b428d;
-    border-radius: 8px;
-    font-size: 1.1em;
-    width: calc(100% - 30px);
-}
-
-.location-input-group button {
-    padding: 15px 20px;
-    background-color: #5b428d;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.location-input-group button:hover {
-    background-color: #4b3472;
-}
-
-.or-divider {
-    margin: 15px 0;
-    color: #888;
-    position: relative;
-    font-size: 1.1em;
-}
-.or-divider::before,
-.or-divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 40%;
-    height: 1px;
-    background: #ddd;
-}
-.or-divider::before {
-    left: 0;
-}
-.or-divider::after {
-    right: 0;
-}
-
-.use-my-location-button {
-    padding: 15px 20px;
-    background-color: #f0f0f0;
-    color: #5b428d;
-    border: 2px solid #5b428d;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    width: calc(100% - 4px);
-}
-
-.use-my-location-button:hover {
-    background-color: #e0e0e0;
-    color: #4b3472;
-}
-
-.powered-by {
-    font-size: 0.8em;
-    color: #999;
-    margin-top: 20px;
-}
-
-.cep-hint {
-    font-size: 0.8em;
-    color: #777;
-    margin-top: 10px;
-}
-
-
-/* =========================================================
-   RESPONSIVO FINO
-   ========================================================= */
-@media (max-width: 980px) {
-  .main-content-layout {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .sidebar-left {
-    width: 100%;
-    max-width: 100%;
-    order: 2;
-  }
-
-  .main-map-area {
-    order: 1;
-    min-height: 420px;
-  }
-
-  .map-container {
-    min-height: 420px;
-    height: 60vh; /* mapa não estica no mobile */
-  }
-
-  .product-card {
-    grid-template-columns: 90px 1fr auto;
-    min-height: 130px;
-  }
-
-  .product-card img {
-    width: 90px;
-    height: 90px;
-  }
-
-  /* Se quiser o botão à esquerda no mobile, mantenha start; 
-     se quiser à direita, troque para end. */
-  .product-card .product-actions {
-    justify-self: end;
-  }
-} /* <-- NÃO REMOVA ESTA CHAVE DE FECHAMENTO */
-
-/* ===================== MAPA / CTA ===================== */
-
-/* a coluna do mapa */
 .main-map-area{
-  position: relative;                 /* ancora filhos absolutos (CTA) */
-  min-height: 640px;                  /* fallback desktop */
+  position: relative;               /* ancora filhos absolutos */
+  min-height: 640px;
 }
 
-/* wrapper do mapa */
+.results-section{}
+
 .map-area{
-  position: relative;                 /* pai do .map-container e do CTA */
-  height: 640px;                      /* altura visível do mapa */
+  position: relative;               /* pai do map-container e CTA */
+  height: 640px;                    /* altura visível do mapa (desktop) */
+  border-radius: 14px;
+  overflow: hidden;
+  background: #eef1f7;
 }
 
-/* o canvas do mapbox ocupa 100% do wrapper */
+/* canvas do mapbox ocupa toda a área */
 .map-container{
   position: absolute;
-  inset: 0;                           /* top/right/bottom/left:0 */
+  inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: 14px;
 }
 
 /* CTA sobre o mapa */
@@ -418,21 +195,148 @@ button:hover{background:var(--brand-600)}
   display: inline-block;
   padding: 10px 14px;
   border-radius: 999px;
-  background: #6c43e0;
+  background: var(--cta);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
+  text-decoration: none;
   box-shadow: 0 8px 24px rgba(0,0,0,.18);
 }
 
-/* responsivo */
-@media (max-width: 980px){
-  .main-map-area{ min-height: 420px; }
-  .map-area{ height: 420px; }
+/* Mensagem sobre o mapa */
+.message-overlay-above-map{
+  margin-top: 16px;
+  text-align: center;
+  color: var(--brand);
+}
+.message-overlay-above-map h2{
+  margin: 10px 0;
+  font-weight: 800;
 }
 
-/* ajuste opcional: quando a janela for alta, deixe o mapa crescer */
-@media (min-height: 900px){
+/* Lista de PDVs */
+.pdv-list{
+  margin-top: 16px;
+}
+.pdv-item{
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+.modal{
+  position: fixed;
+  inset:0;
+  background: rgba(0,0,0,.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content{
+  width: min(560px, 92vw);
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  text-align: center;
+}
+
+.modal-content h2{
+  margin: 0 0 16px;
+  color: var(--brand);
+}
+
+.location-input-group{
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.location-input-group input{
+  height: 40px;
+  border: 1px solid #ccd2df;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.location-input-group button{
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.or-divider{
+  margin: 16px 0 8px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.use-my-location-button{
+  height: 40px;
+  min-width: 220px;
+  border: 0;
+  border-radius: 8px;
+  background: #eee;
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.close-button{
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 26px;
+  color: #999;
+  cursor: pointer;
+}
+
+/* =========================================================
+   ALERTA/ERRO
+   ========================================================= */
+.danger{ color: #c62828; }
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width:1080px){
+  .main-content-layout{
+    grid-template-columns: 320px 1fr;
+  }
+}
+
+@media (max-width:980px){
+  .main-content-layout{
+    grid-template-columns: 1fr;
+  }
+  .sidebar-left{
+    width: 100%;
+    max-width: 100%;
+  }
+  .main-map-area{
+    min-height: 420px;
+  }
+  .map-area{
+    height: 420px;
+  }
+  .product-actions{
+    justify-items: start;  /* no mobile pode alinhar à esquerda */
+  }
+}
+
+/* se a janela tiver bastante altura, deixa o mapa crescer sem cortar */
+@media (min-height:900px){
   .map-area{ height: calc(100vh - 220px); }
 }
-
-
