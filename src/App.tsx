@@ -24,28 +24,36 @@ type PointOfSale = {
 export default function App() {
   const BACKEND_URL = API_BASE;
 
+  // Modal / localização do usuário
   const [showLocationModal, setShowLocationModal] = useState<boolean>(true);
-  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null);
+  const [userLocationCoords, setUserLocationCoords] = useState<[number, number] | null>(null); // [lon, lat]
   const [userLocationAddress, setUserLocationAddress] = useState<string | null>(null);
   const [cep, setCep] = useState<string>("");
 
+  // Produtos em destaque
   const [highlightProducts, setHighlightProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
 
+  // Busca por produto
   const [productSearchTerm, setProductSearchTerm] = useState<string>("");
   const [foundProducts, setFoundProducts] = useState<Product[]>([]);
   const [loadingProductSearch, setLoadingProductSearch] = useState<boolean>(false);
 
+  // Produto selecionado
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // PDVs
   const [pdvResults, setPdvResults] = useState<PointOfSale[]>([]);
   const [loadingPdvs, setLoadingPdvs] = useState<boolean>(false);
 
+  // Mensagens
   const [error, setError] = useState<string | null>(null);
 
-  const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]);
+  // Mapa
+  const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]); // [lon, lat]
   const [mapZoom, setMapZoom] = useState<number>(11);
 
+  // Carrega destaques
   useEffect(() => {
     (async () => {
       try {
@@ -62,6 +70,10 @@ export default function App() {
     })();
   }, [BACKEND_URL]);
 
+  /**
+   * Define a localização do usuário (CEP ou lat/lon).
+   * Para CEP, geocodifica diretamente na AwesomeAPI (sem depender dos PDVs).
+   */
   const searchPdvsByLocation = async (params: { cep?: string; lat?: number; lon?: number }) => {
     setLoadingPdvs(true);
     setError(null);
@@ -69,7 +81,7 @@ export default function App() {
     setShowLocationModal(false);
 
     let addressFromApi: string | null = null;
-    let coordsFromApi: [number, number] | null = null;
+    let coordsFromApi: [number, number] | null = null; // [lon, lat]
 
     try {
       if (params.cep) {
@@ -80,28 +92,32 @@ export default function App() {
           setShowLocationModal(true);
           return;
         }
-        const resp = await fetch(`${BACKEND_URL}/pdvs/proximos?cep=${cleanCep}`);
-        const data = await resp.json();
-        if (!resp.ok || !Array.isArray(data) || data.length === 0) {
-          setError((data && data.erro) || "Não foi possível validar o CEP. Tente novamente.");
+
+        // Geocodificação do CEP diretamente (sem usar /pdvs/proximos)
+        const r = await fetch(`https://cep.awesomeapi.com.br/json/${cleanCep}`);
+        if (!r.ok) {
+          setError("Não foi possível validar o CEP. Tente novamente.");
           setLoadingPdvs(false);
           setShowLocationModal(true);
           return;
         }
-        const first = data[0];
-        if (first?.latitude && first?.longitude) {
-          coordsFromApi = [parseFloat(first.longitude), parseFloat(first.latitude)];
-          addressFromApi = first.endereco;
-        } else {
+        const j = await r.json();
+        if (!j.lat || !j.lng) {
           setError("CEP válido, mas sem coordenadas para exibir no mapa. Tente outro CEP.");
           setLoadingPdvs(false);
           setShowLocationModal(true);
           return;
         }
+
+        const lat = parseFloat(j.lat);
+        const lon = parseFloat(j.lng);
+        coordsFromApi = [lon, lat];
+        addressFromApi = [j.address, j.district, j.city, j.state, j.cep].filter(Boolean).join(", ");
       } else if (params.lat && params.lon) {
+        // Usuário permitiu geolocalização
         coordsFromApi = [params.lon, params.lat];
         try {
-          const KEY = "0b4186d795a547769c0272db912585c3";
+          const KEY = "0b4186d795a547769c0272db912585c3"; // OpenCage (só para tornar o endereço legível)
           const r = await fetch(
             `https://api.opencagedata.com/geocode/v1/json?q=${params.lat}+${params.lon}&key=${KEY}&pretty=0&no_annotations=1`
           );
@@ -117,12 +133,14 @@ export default function App() {
         return;
       }
 
+      // Aplica no estado e posiciona o mapa
       setUserLocationCoords(coordsFromApi);
       setUserLocationAddress(addressFromApi);
       setMapCenter(coordsFromApi!);
       setMapZoom(12);
+
       setLoadingPdvs(false);
-      setSelectedProduct(null);
+      setSelectedProduct(null); // usuário ainda vai escolher o produto
     } catch (e: any) {
       console.error("ERRO em searchPdvsByLocation:", e);
       setError(`Erro ao obter sua localização: ${e.message}. Tente novamente.`);
@@ -155,6 +173,7 @@ export default function App() {
     );
   };
 
+  // Busca de produtos por nome
   const handleProductSearch = async () => {
     if (!productSearchTerm.trim()) {
       setFoundProducts([]);
@@ -164,9 +183,7 @@ export default function App() {
     setError(null);
     setFoundProducts([]);
     try {
-      const resp = await fetch(
-        `${BACKEND_URL}/produtos/buscar?q=${encodeURIComponent(productSearchTerm)}`
-      );
+      const resp = await fetch(`${BACKEND_URL}/produtos/buscar?q=${encodeURIComponent(productSearchTerm)}`);
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
         throw new Error(`Erro ao buscar produtos: ${errData.erro || resp.statusText}`);
@@ -180,6 +197,7 @@ export default function App() {
     }
   };
 
+  // Ao selecionar um produto: busca PDVs próximos para esse produto
   const handleSelectProductAndSearchPdvs = async (product: Product) => {
     if (!userLocationCoords) {
       setShowLocationModal(true);
@@ -190,6 +208,7 @@ export default function App() {
     setLoadingPdvs(true);
     setError(null);
     setPdvResults([]);
+
     try {
       const [lon, lat] = userLocationCoords;
       const url = `${BACKEND_URL}/pdvs/proximos/produto?productId=${product.id}&lat=${lat}&lon=${lon}`;
@@ -200,6 +219,7 @@ export default function App() {
       }
       const data: PointOfSale[] = await resp.json();
       setPdvResults(data);
+
       if (data.length > 0) {
         const first = data[0];
         setMapCenter([first.longitude, first.latitude]);
@@ -225,11 +245,7 @@ export default function App() {
           {p.volume && <p className="product-volume">{p.volume}</p>}
         </div>
         <div className="product-actions">
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => handleSelectProductAndSearchPdvs(p)}
-          >
+          <button type="button" className="btn-primary" onClick={() => handleSelectProductAndSearchPdvs(p)}>
             Encontrar
           </button>
           {p.produto_url ? (
@@ -254,6 +270,7 @@ export default function App() {
   return (
     <div className="App">
       <main className="main-content-layout">
+        {/* Lateral esquerda */}
         <div className="sidebar-left">
           <section className="search-section">
             <label className="search-label">Qual produto você quer encontrar?</label>
@@ -265,7 +282,9 @@ export default function App() {
                 onChange={(e) => setProductSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleProductSearch()}
               />
-              <button type="button" onClick={handleProductSearch}>Buscar</button>
+              <button type="button" onClick={handleProductSearch}>
+                Buscar
+              </button>
             </div>
           </section>
 
@@ -298,6 +317,7 @@ export default function App() {
           )}
         </div>
 
+        {/* Área do mapa e resultados */}
         <div className="main-map-area">
           <section className="results-section">
             <div className="map-area">
@@ -331,7 +351,9 @@ export default function App() {
                     pdvResults.map((pdv) => (
                       <div key={pdv.id} className="pdv-item">
                         <h4>{pdv.nome}</h4>
-                        <p>Endereço: {pdv.endereco}, {pdv.cep}</p>
+                        <p>
+                          Endereço: {pdv.endereco}, {pdv.cep}
+                        </p>
                         <p>Distância: {pdv.distancia_km} km</p>
                       </div>
                     ))
@@ -347,6 +369,7 @@ export default function App() {
         </div>
       </main>
 
+      {/* Modal de localização */}
       {showLocationModal && (
         <div className="modal">
           <div className="modal-content">
@@ -361,7 +384,9 @@ export default function App() {
                 value={cep}
                 onChange={(e) => setCep(e.target.value)}
               />
-              <button type="button" onClick={handleSearchByCepClick}>Buscar</button>
+              <button type="button" onClick={handleSearchByCepClick}>
+                Buscar
+              </button>
             </div>
             <p className="or-divider">OU</p>
             <button type="button" className="use-my-location-button" onClick={handleUseMyLocation}>
