@@ -113,19 +113,12 @@ export default function App() {
         const lon = parseFloat(j.lng);
         coordsFromApi = [lon, lat];
         addressFromApi = [j.address, j.district, j.city, j.state, j.cep].filter(Boolean).join(", ");
-      } else if (params.lat && params.lon) {
-        // Usuário permitiu geolocalização
-        coordsFromApi = [params.lon, params.lat];
-        try {
-          const KEY = "0b4186d795a547769c0272db912585c3"; // OpenCage (só para tornar o endereço legível)
-          const r = await fetch(
-            `https://api.opencagedata.com/geocode/v1/json?q=${params.lat}+${params.lon}&key=${KEY}&pretty=0&no_annotations=1`
-          );
-          const j = await r.json();
-          addressFromApi = j?.results?.[0]?.formatted ?? `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
-        } catch {
-          addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
-        }
+     } else if (params.lat && params.lon) {
+  coordsFromApi = [params.lon, params.lat];
+  // Sem chamada a serviços externos — só um texto simples
+  addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
+}
+
       } else {
         setError("Nenhum CEP ou localização fornecida para busca.");
         setLoadingPdvs(false);
