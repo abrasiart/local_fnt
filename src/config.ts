@@ -1,5 +1,3 @@
-// src/config.ts
-// Usa a env REACT_APP_API_URL se existir; caso contrário, cai para "/api" (rewrite do Vercel)
-// src/config.ts
+// src/config.ts (Vite)
 export const API_BASE =
-  process.env.REACT_APP_API_URL || "http://localhost:4000";
+  (import.meta as any).env.VITE_API_URL || "http://localhost:4000";
