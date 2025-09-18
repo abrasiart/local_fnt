@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useEffect, useState } from "react";
 import MapComponent from "./MapComponent";
 import { API_BASE } from "./config";
@@ -54,7 +55,7 @@ export default function App() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([-48.847, -26.304]); // [lon, lat]
   const [mapZoom, setMapZoom] = useState<number>(11);
 
-  // Carrega destaques
+  // Carrega destaques ao montar
   useEffect(() => {
     (async () => {
       try {
@@ -73,8 +74,7 @@ export default function App() {
 
   /**
    * Busca coordenadas a partir do CEP (no backend) ou usa coordenadas locais.
-   * Aqui removemos o reverse geocode do OpenCage para evitar erro 402;
-   * quando for por coordenadas, montamos só um texto "lat, lon".
+   * Sem reverse geocode externo (texto lat, lon).
    */
   const searchPdvsByLocation = async (params: { cep?: string; lat?: number; lon?: number }) => {
     setLoadingPdvs(true);
@@ -115,7 +115,7 @@ export default function App() {
           setShowLocationModal(true);
           return;
         }
-      } else if (params.lat && params.lon) {
+      } else if (params.lat != null && params.lon != null) {
         // Sem reverse geocode externo: texto simples
         coordsFromApi = [params.lon, params.lat];
         addressFromApi = `${params.lat.toFixed(4)}, ${params.lon.toFixed(4)}`;
